@@ -179,4 +179,22 @@ public class TurnoRestController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Pe rfil de cliente requerido"));
     }
 
+    ////////////////////
+    /// para dashboard obtener turnos del cliente
+    
+    @GetMapping("/mis-turnos")
+    public ResponseEntity<List<TurnoResponseDTO>> getTurnosDelCliente(Principal principal) {
+        String email = principal.getName();
+
+        UserEntity user = userRepo.findByEmailWithPersona(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Usuario no encontrado"));
+
+        if (!(user.getPersona() instanceof Cliente cliente)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Perfil de cliente requerido");
+        }
+
+        List<TurnoResponseDTO> turnos = turnoService.obtenerTurnosPorCliente(cliente.getId());
+        return ResponseEntity.ok(turnos);
+    }
+
 }

@@ -21,4 +21,7 @@ public interface ITurnoService {
     void cancelarTurno(Integer turnoId, String codigoAnulacion) throws NegocioException;
 
     void cancelarTurnoPorCodigo(String codigoAnulacion) throws NegocioException;
+
+    List<TurnoResponseDTO> obtenerTurnosPorCliente(Integer clienteId);
+
 }

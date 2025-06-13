@@ -24,4 +24,6 @@ public interface ITurnoRepository extends JpaRepository<Turno, Integer> {
 
     Optional<Turno> findByCodigoAnulacion(String codigo);
 
+    List<Turno> findByClienteIdOrderByFechaHoraDesc(Integer clienteId);
+
 }

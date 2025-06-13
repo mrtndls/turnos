@@ -217,4 +217,13 @@ public class TurnoServiceImpl implements ITurnoService {
         turno.setEstado("ANULADO");
         turnoRepository.save(turno);
     }
+
+    @Override
+    public List<TurnoResponseDTO> obtenerTurnosPorCliente(Integer clienteId) {
+        List<Turno> turnos = turnoRepository.findByClienteIdOrderByFechaHoraDesc(clienteId);
+        return turnos.stream()
+                .map(turnoMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
 }
