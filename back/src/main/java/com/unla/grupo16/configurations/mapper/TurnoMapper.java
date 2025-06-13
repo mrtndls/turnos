@@ -24,15 +24,21 @@ public class TurnoMapper {
     public TurnoResponseDTO toDTO(Turno turno) {
         TurnoResponseDTO dto = modelMapper.map(turno, TurnoResponseDTO.class);
 
-        // formatea fecha y hora
+        LocalDateTime fechaHora = turno.getFechaHora();
+
+        // Separar fecha y hora para el frontend
+        dto.setFecha(fechaHora.toLocalDate().toString()); // ej: "2025-06-13"
+        dto.setHora(fechaHora.toLocalTime().toString());  // ej: "09:00"
+
+        // Esto es opcional si todavía lo usás en otro lado
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        dto.setFechaHora(turno.getFechaHora().format(formatter));
+        dto.setFechaHora(fechaHora.format(formatter));
 
         dto.setNombreCliente(turno.getCliente().getNombre());
         dto.setNombreEmpleado(turno.getEmpleado().getNombre());
         dto.setNombreServicio(turno.getServicio().getNombre());
 
-        // obtener uubi asociada 
+        // Ubicación
         Optional<Ubicacion> ubiOpt = turno.getServicio().getUbicaciones().stream().findFirst();
         String ubicacionDescripcion = ubiOpt.map(ubicacion -> {
             String direccion = ubicacion.getDireccion();

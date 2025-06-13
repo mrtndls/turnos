@@ -226,4 +226,8 @@ public class TurnoServiceImpl implements ITurnoService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<Turno> findAll() {
+        return turnoRepository.findAll();
+    }
 }

@@ -1,31 +1,17 @@
-// components/MisTurnosList.tsx
-import React, { useEffect, useState } from "react";
-import { fetchMisTurnos } from "../api/turnoApi";
+import React from "react";
 import { TurnoResponseDTO } from "../types/turno";
 
-export default function MisTurnosList() {
-  const [turnos, setTurnos] = useState<TurnoResponseDTO[]>([]);
-  const [error, setError] = useState("");
+interface Props {
+  turnos: TurnoResponseDTO[];
+}
 
-  useEffect(() => {
-    fetchMisTurnos()
-      .then(setTurnos)
-      .catch((err) => setError(err.message));
-  }, []);
-
-  if (error) return <div style={{ color: "red" }}>Error: {error}</div>;
-
+const TurnoAdminList: React.FC<Props> = ({ turnos }) => {
   if (turnos.length === 0) {
-    return <p>No tenés turnos reservados.</p>;
+    return <p>No hay turnos disponibles.</p>;
   }
 
   return (
-    <div style={{ overflowX: "auto", marginTop: "1rem", padding: "1rem" }}>
-      <h2
-        style={{ fontSize: "1.25rem", fontWeight: "700", marginBottom: "1rem" }}
-      >
-        Mis turnos reservados
-      </h2>
+    <div style={{ overflowX: "auto", marginTop: "1rem" }}>
       <table
         style={{
           width: "100%",
@@ -56,23 +42,19 @@ export default function MisTurnosList() {
               }}
             >
               <td style={bodyCellStyle}>{turno.id}</td>
-              <td style={bodyCellStyle}>
-                {turno.nombreServicio || "Sin servicio"}
-              </td>
-              <td style={bodyCellStyle}>
-                {turno.ubicacionDescripcion || "Sin ubicación"}
-              </td>
+              <td style={bodyCellStyle}>{turno.nombreServicio}</td>
+              <td style={bodyCellStyle}>{turno.ubicacionDescripcion}</td>
               <td style={bodyCellStyle}>{turno.fecha}</td>
               <td style={bodyCellStyle}>{turno.hora}</td>
               <td style={bodyCellStyle}>{turno.estado}</td>
-              <td style={bodyCellStyle}>{turno.codigoAnulacion || "-"}</td>
+              <td style={bodyCellStyle}>{turno.codigoAnulacion}</td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
   );
-}
+};
 
 const headerCellStyle: React.CSSProperties = {
   padding: "10px 15px",
@@ -88,3 +70,5 @@ const bodyCellStyle: React.CSSProperties = {
   color: "#1f2937",
   verticalAlign: "middle",
 };
+
+export default TurnoAdminList;

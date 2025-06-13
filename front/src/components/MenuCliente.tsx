@@ -1,8 +1,8 @@
-// src/components/MenuDashboard.tsx
+// src/components/MenuCliente.tsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function MenuDashboard() {
+export default function MenuCliente() {
   const navigate = useNavigate();
 
   return (
@@ -10,19 +10,19 @@ export default function MenuDashboard() {
       <h2 className="text-2xl font-bold mb-6">Seleccione una opción</h2>
       <div className="space-y-4">
         <button
-          onClick={() => navigate("/dashboard/reservar")}
+          onClick={() => navigate("/dashboard/cliente/reservar")}
           className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
         >
           Reservar turno
         </button>
         <button
-          onClick={() => navigate("/dashboard/mis-turnos")}
+          onClick={() => navigate("/dashboard/cliente/mis-turnos")}
           className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
         >
           Mis turnos
         </button>
         <button
-          onClick={() => navigate("/dashboard/anular")}
+          onClick={() => navigate("/dashboard/cliente/anular")}
           className="w-full bg-yellow-600 text-white py-2 rounded hover:bg-yellow-700 transition"
         >
           Anular turno

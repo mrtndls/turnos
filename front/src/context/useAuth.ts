@@ -4,7 +4,7 @@ import { useAuthContext } from "./AuthContext";
 
 export const useAuth = () => {
   const { user, login, logout } = useAuthContext();
-
+  console.log("Usuario logueado:", user);
   return {
     isAuthenticated: Boolean(user?.token),
     email: user?.email || null,
@@ -13,3 +13,5 @@ export const useAuth = () => {
     logout,
   };
 };
+
+export { useAuthContext };

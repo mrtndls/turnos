@@ -28,8 +28,17 @@ const Login: React.FC = () => {
 
     try {
       const response = await loginUser(email, password);
-      login({ email: response.email, token: response.token });
-      navigate("/dashboard/menu"); // Ruta protegida por defecto
+      login({
+        email: response.email,
+        token: response.token,
+        rol: response.rol,
+      });
+      //navigate("/dashboard/menu"); // redirect del login
+      if (response.rol === "ADMIN") {
+        navigate("/dashboard/admin");
+      } else {
+        navigate("/dashboard/cliente/menu");
+      }
     } catch {
       setError("Credenciales incorrectas o error en la conexión.");
     } finally {

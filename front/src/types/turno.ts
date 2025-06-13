@@ -23,13 +23,16 @@ export interface TurnoRequestDTO {
   hora: string;    // Ej: "09:00"
 }
 
-// types/turno.ts
 export interface TurnoResponseDTO {
   id: number;
   codigoAnulacion: string;
-  fecha: string;
-  hora: string;
+  estado: string;
   nombreServicio: string;
   ubicacionDescripcion: string;
-  estado: string;
+  observaciones: string;
+
+  // Asegúrate de tener las nuevas propiedades
+  fecha: string;  // Ej: "2025-06-13"
+  hora: string;   // Ej: "09:00"
 }
+

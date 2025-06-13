@@ -25,23 +25,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     const storedEmail = localStorage.getItem("email");
+    const storedRol = localStorage.getItem("rol");
 
-    if (storedToken && storedEmail) {
-      setUser({ email: storedEmail, token: storedToken });
+    if (storedToken && storedEmail && storedRol) {
+      const cleanedRol = storedRol.replace("ROLE_", "") as "ADMIN" | "USER";
+
+      setUser({
+        email: storedEmail,
+        token: storedToken,
+        rol: cleanedRol,
+      });
+
+      console.log("AuthProvider useEffect - restored user", {
+        token: storedToken,
+        email: storedEmail,
+        rol: cleanedRol,
+      });
     }
 
     setLoading(false);
   }, []);
 
   const login = (user: User) => {
+    const cleanedRol = user.rol.replace("ROLE_", "");
+
     localStorage.setItem("token", user.token);
     localStorage.setItem("email", user.email);
-    setUser(user);
+    localStorage.setItem("rol", cleanedRol); // guardá "USER" o "ADMIN"
+
+    setUser({
+      ...user,
+      rol: cleanedRol as "ADMIN" | "USER",
+    });
   };
 
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("email");
+    localStorage.removeItem("rol");
     setUser(null);
   };
 

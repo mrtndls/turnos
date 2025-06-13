@@ -13,12 +13,16 @@ public class TurnoResponseDTO {
 
     private Integer id;
     private String estado;
-    private String fechaHora;
+
+    private String fecha; // 👈 NUEVO
+    private String hora;  // 👈 NUEVO
+
+    private String fechaHora; // Opcional, podés eliminarlo si no lo usás más
+
     private String nombreCliente;
     private String nombreEmpleado;
     private String nombreServicio;
     private String ubicacionDescripcion;
     private String observaciones;
     private String codigoAnulacion;
-
 }

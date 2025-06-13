@@ -29,16 +29,15 @@ import com.unla.grupo16.models.dtos.responses.TurnoResponseDTO;
 import com.unla.grupo16.models.dtos.responses.UbicacionResponseDTO;
 import com.unla.grupo16.models.entities.Cliente;
 import com.unla.grupo16.models.entities.Servicio;
-import com.unla.grupo16.models.entities.UserEntity;
 import com.unla.grupo16.repositories.IServicioRepository;
 import com.unla.grupo16.repositories.IUbicacionRepository;
 import com.unla.grupo16.repositories.IUserRepository;
 import com.unla.grupo16.services.interfaces.ITurnoService;
 
 @RestController
-@RequestMapping("/api/turnos")
-@PreAuthorize("hasRole('USER','ADMIN')")
-public class TurnoRestController {
+@RequestMapping("/api/cliente/turnos")
+@PreAuthorize("hasRole('USER')")
+public class ClienteTurnoRestController {
 
     private final IServicioRepository servicioRepository;
     private final ITurnoService turnoService;
@@ -47,7 +46,7 @@ public class TurnoRestController {
     private final ServicioMapper servicioMapper;
     private final UbicacionMapper ubicacionMapper;
 
-    public TurnoRestController(
+    public ClienteTurnoRestController(
             IServicioRepository servicioRepository,
             ITurnoService turnoService,
             IUbicacionRepository ubicacionRepository,
@@ -63,55 +62,39 @@ public class TurnoRestController {
         this.ubicacionMapper = ubicacionMapper;
     }
 
-    // 1. Obtener servicios disponibles
     @GetMapping("/servicios")
     public ResponseEntity<List<ServicioResponseDTO>> listarServicios() {
         List<Servicio> servicios = servicioRepository.findAll();
-        List<ServicioResponseDTO> dtoList = servicioMapper.toDTOList(servicios);
-        return ResponseEntity.ok(dtoList);
+        return ResponseEntity.ok(servicioMapper.toDTOList(servicios));
     }
 
-    // 2. Obtener ubicaciones por servicio
     @GetMapping("/servicios/{servicioId}/ubicaciones")
     public ResponseEntity<List<UbicacionResponseDTO>> listarUbicaciones(@PathVariable Integer servicioId) {
         Servicio servicio = servicioRepository.findById(servicioId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Servicio no encontrado"));
 
-        List<UbicacionResponseDTO> ubicaciones = ubicacionMapper.toDTOList(servicio.getUbicaciones());
-        return ResponseEntity.ok(ubicaciones);
+        return ResponseEntity.ok(ubicacionMapper.toDTOList(servicio.getUbicaciones()));
     }
 
-    // 3. Obtener días disponibles para un servicio
     @GetMapping("/servicios/{servicioId}/dias-disponibles")
     public ResponseEntity<List<LocalDate>> diasDisponibles(@PathVariable Integer servicioId) {
         Servicio servicio = servicioRepository.findById(servicioId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Servicio no encontrado"));
 
-        List<LocalDate> dias = turnoService.obtenerDiasDisponiblesParaServicio(servicio);
-        return ResponseEntity.ok(dias);
+        return ResponseEntity.ok(turnoService.obtenerDiasDisponiblesParaServicio(servicio));
     }
 
-    // 4. Obtener horarios disponibles para un día
     @GetMapping("/servicios/{servicioId}/fechas/{fecha}/horarios")
     public ResponseEntity<List<String>> horariosDisponibles(
             @PathVariable Integer servicioId,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
-        List<String> horarios = turnoService.getHorariosDisponibles(servicioId, fecha);
-        return ResponseEntity.ok(horarios);
+        return ResponseEntity.ok(turnoService.getHorariosDisponibles(servicioId, fecha));
     }
 
-    // 5. Confirmar datos antes de crear (opcional)
     @PostMapping("/confirmar")
-    public ResponseEntity<Map<String, Object>> confirmarDatos(
-            @RequestBody TurnoRequestDTO dto,
-            Principal principal) {
-
+    public ResponseEntity<Map<String, Object>> confirmarDatos(@RequestBody TurnoRequestDTO dto, Principal principal) {
         Cliente cliente = getClienteAutenticado(principal);
-        if (cliente == null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Perfil de cliente requerido"));
-        }
 
-        //dto.setIdCliente(cliente.getId());
         Map<String, Object> datos = new HashMap<>();
         servicioRepository.findById(dto.getIdServicio())
                 .ifPresent(s -> datos.put("servicio", servicioMapper.toDTO(s)));
@@ -125,34 +108,18 @@ public class TurnoRestController {
         return ResponseEntity.ok(datos);
     }
 
-    // 6. Crear el turno
     @PostMapping
-    public ResponseEntity<TurnoResponseDTO> crearTurno(
-            @RequestBody TurnoRequestDTO turnoRequestDTO,
-            Principal principal) {
-
-        // Obtener email del usuario autenticado (desde el token/sesion)
-        String email = principal.getName();
-
-        // Buscar UserEntity con ese email para validar que es cliente y obtener cliente
-        UserEntity user = userRepo.findByEmailWithPersona(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Usuario no encontrado"));
-
-        if (!(user.getPersona() instanceof Cliente cliente)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Perfil de cliente requerido");
-        }
-
-        turnoRequestDTO.setIdCliente(cliente.getId());
+    public ResponseEntity<TurnoResponseDTO> crearTurno(@RequestBody TurnoRequestDTO dto, Principal principal) {
+        Cliente cliente = getClienteAutenticado(principal);
+        dto.setIdCliente(cliente.getId());
 
         try {
-            TurnoResponseDTO turno = turnoService.crearTurno(turnoRequestDTO, email);
-            return ResponseEntity.ok(turno);
+            return ResponseEntity.ok(turnoService.crearTurno(dto, principal.getName()));
         } catch (NegocioException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
         }
     }
 
-    // 7. Anular turno
     @PostMapping("/anular")
     public ResponseEntity<Map<String, String>> anularTurno(@RequestParam String codigoAnulacion) {
         try {
@@ -163,38 +130,17 @@ public class TurnoRestController {
         }
     }
 
-    // === Helpers ===
-    /*private Cliente obtenerClienteDesdePrincipal(Principal principal) {
-        return userRepo.findByEmailConPersona(principal.getName())
-                .map(user -> {
-                    Object persona = Hibernate.unproxy(user.getPersona());
-                    return (persona instanceof Cliente cliente) ? cliente : null;
-                }).orElse(null);
-    }*/
-    public Cliente getClienteAutenticado(Principal principal) {
-        return userRepo.findByEmailConPersona(principal.getName())
-                .map(user -> (Cliente) Hibernate.unproxy(user.getPersona()))
-                .filter(Cliente.class::isInstance)
-                .map(Cliente.class::cast)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Pe rfil de cliente requerido"));
-    }
-
-    ////////////////////
-    /// para dashboard obtener turnos del cliente
-    
     @GetMapping("/mis-turnos")
     public ResponseEntity<List<TurnoResponseDTO>> getTurnosDelCliente(Principal principal) {
-        String email = principal.getName();
-
-        UserEntity user = userRepo.findByEmailWithPersona(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Usuario no encontrado"));
-
-        if (!(user.getPersona() instanceof Cliente cliente)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Perfil de cliente requerido");
-        }
-
-        List<TurnoResponseDTO> turnos = turnoService.obtenerTurnosPorCliente(cliente.getId());
-        return ResponseEntity.ok(turnos);
+        Cliente cliente = getClienteAutenticado(principal);
+        return ResponseEntity.ok(turnoService.obtenerTurnosPorCliente(cliente.getId()));
     }
 
+    private Cliente getClienteAutenticado(Principal principal) {
+        return userRepo.findByEmailConPersona(principal.getName())
+                .map(user -> Hibernate.unproxy(user.getPersona()))
+                .filter(Cliente.class::isInstance)
+                .map(Cliente.class::cast)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Perfil de cliente requerido"));
+    }
 }

@@ -13,7 +13,7 @@ const DashboardCliente: React.FC = () => {
   };
 
     const handleHome = () => {
-    navigate("/dashboard");
+    navigate("/dashboard/cliente/menu");
   };
 
   return (

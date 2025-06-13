@@ -4,7 +4,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import Login from "./pages/Login";
 import PrivateRoute from "./routes/PrivateRoute";
-import DashBoardRoutes from "./routes/DashboardRoutes";
+import DashboardAdminRoutes from "./routes/DashboardAdminRoutes";
+import DashboardClienteRoutes from "./routes/DashboardClienteRoutes";
 
 function App() {
   return (
@@ -13,11 +14,22 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
 
+          {/* Ruta para ADMIN */}
           <Route
-            path="/dashboard/*"
+            path="/dashboard/admin/*"
             element={
-              <PrivateRoute>
-                <DashBoardRoutes />
+              <PrivateRoute allowedRoles={["ADMIN"]}>
+                <DashboardAdminRoutes />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Ruta para CLIENTE */}
+          <Route
+            path="/dashboard/cliente/*"
+            element={
+              <PrivateRoute allowedRoles={["USER"]}>
+                <DashboardClienteRoutes />
               </PrivateRoute>
             }
           />
