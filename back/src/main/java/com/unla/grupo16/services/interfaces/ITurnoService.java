@@ -10,7 +10,7 @@ import com.unla.grupo16.models.entities.Servicio;
 
 public interface ITurnoService {
 
-    TurnoResponseDTO crearTurno(TurnoRequestDTO dto) throws NegocioException;
+    TurnoResponseDTO crearTurno(TurnoRequestDTO dto, String username) throws NegocioException;
 
     List<String> getHorariosDisponibles(Integer servicioId, LocalDate fecha);
 

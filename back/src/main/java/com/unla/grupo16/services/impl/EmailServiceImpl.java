@@ -1,4 +1,4 @@
-package com.unla.grupo16.services.implementations;
+package com.unla.grupo16.services.impl;
 
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;

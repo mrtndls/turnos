@@ -19,4 +19,8 @@ public interface IUserRepository extends JpaRepository<UserEntity, Integer> {
     Optional<UserEntity> findByEmailConPersona(@Param("email") String email);
 
     Optional<UserEntity> findByPersona(Cliente cliente);
+
+    @Query("SELECT u FROM UserEntity u LEFT JOIN FETCH u.persona WHERE u.email = :email")
+    Optional<UserEntity> findByEmailWithPersona(@Param("email") String email);
+
 }

@@ -5,11 +5,10 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.unla.grupo16.models.entities.Empleado;
+import com.unla.grupo16.models.entities.Localidad;
 
 @Repository
-public interface IEmpleadoRepository extends JpaRepository<Empleado, Integer> {
+public interface ILocalidadRepository extends JpaRepository<Localidad, Integer> {
 
-    Optional<Empleado> findByDni(String dni);
-
+    Optional<Localidad> findByNombre(String nombre);
 }

@@ -1,4 +1,4 @@
-package com.unla.grupo16.services.implementations;
+package com.unla.grupo16.services.impl;
 
 import java.text.MessageFormat;
 import java.util.stream.Collectors;
@@ -25,17 +25,17 @@ public class UserServiceImp implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        UserEntity user = userRepository.findByEmail(email).orElseThrow(
+        UserEntity user = userRepository.findByEmailWithPersona(email).orElseThrow(
                 () -> new UsernameNotFoundException(
                         MessageFormat.format("Usuario con email {0} no encontrado", email)));
 
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPassword(),
-                user.isActivo(), // enabled
-                true, // accountNonExpired
-                true, // credentialsNonExpired
-                true, // accountNonLocked
+                user.isActivo(),
+                true,
+                true,
+                true,
                 user.getRoleEntities().stream()
                         .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getType().name()))
                         .collect(Collectors.toList())

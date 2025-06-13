@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>E-MAIL</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+      }
+      .email-container {
+        background-color: white;
+        padding: 30px;
+        border-radius: 10px;
+        max-width: 600px;
+        margin: auto;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        background-color: #800000; /* color de fondo titulo */
+        color: white;
+        padding: 15px;
+        text-align: center;
+        border-radius: 10px 10px 0 0;
+      }
+      .content {
+        padding: 20px;
+        color: #333;
+      }
+      .footer {
+        font-size: 12px;
+        color: #aaa;
+        margin-top: 20px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        <h2 th:text="${titulo}">Email-SpringBoot-Java</h2>
+      </div>
+      <div class="content">
+        <p th:text="${mensaje}">**!¡!** OO2-G16 **!¡!**</p>
+      </div>
+      <div class="footer">
+        <p>No responder! No ! no ! NO! nO!.</p>
+      </div>
+    </div>
+  </body>
+</html>

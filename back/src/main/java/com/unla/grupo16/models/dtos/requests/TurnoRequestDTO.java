@@ -18,7 +18,7 @@ import lombok.ToString;
 @ToString
 public class TurnoRequestDTO {
 
-    @NotNull(message = "El ID del cliente es obligatorio")
+    //@NotNull(message = "El ID del cliente es obligatorio")
     private Integer idCliente;
 
     @NotNull(message = "El ID del servicio es obligatorio")
