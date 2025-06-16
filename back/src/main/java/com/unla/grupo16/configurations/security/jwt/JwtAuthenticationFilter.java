@@ -1,8 +1,10 @@
 package com.unla.grupo16.configurations.security.jwt;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +20,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.unla.grupo16.models.dtos.responses.ErrorResponseDTO;
 import com.unla.grupo16.services.impl.UserServiceImp;
 
 import jakarta.servlet.FilterChain;
@@ -26,7 +27,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-// extiende OncePerRequestFilter : garantiza una sola ejecucion por request
+// extiende OncePerRequestFilter : garantiza una sola ejecución por request
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -51,7 +52,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 username = jwtUtil.getUsernameFromToken(jwt);
             } catch (Exception e) {
-                // Error al parsear el token
                 setErrorResponse(response, HttpStatus.UNAUTHORIZED, "Token inválido");
                 return;
             }
@@ -90,12 +90,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws IOException {
         response.setStatus(status.value());
         response.setContentType("application/json");
-        ErrorResponseDTO error = ErrorResponseDTO.builder()
-                .codigo(status.value())
-                .mensaje(mensaje)
-                .build();
+
+        Map<String, Object> body = Map.of(
+                "timestamp", LocalDateTime.now().toString(),
+                "estado", status.value(),
+                "error", status.getReasonPhrase(),
+                "mensaje", mensaje
+        );
 
         ObjectMapper mapper = new ObjectMapper();
-        response.getWriter().write(mapper.writeValueAsString(error));
+        response.getWriter().write(mapper.writeValueAsString(body));
     }
 }

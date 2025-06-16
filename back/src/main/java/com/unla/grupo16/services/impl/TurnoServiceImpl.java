@@ -19,7 +19,6 @@ import com.unla.grupo16.exception.NegocioException;
 import com.unla.grupo16.exception.RecursoNoEncontradoException;
 import com.unla.grupo16.models.dtos.requests.TurnoRequestDTO;
 import com.unla.grupo16.models.dtos.responses.DisponibilidadResponseDTO;
-import com.unla.grupo16.models.dtos.responses.TurnoAdminDTO;
 import com.unla.grupo16.models.dtos.responses.TurnoResponseDTO;
 import com.unla.grupo16.models.entities.Cliente;
 import com.unla.grupo16.models.entities.Disponibilidad;
@@ -321,11 +320,8 @@ public class TurnoServiceImpl implements ITurnoService {
     }
 
     @Override
-    public List<TurnoAdminDTO> obtenerTurnosNoDisponibles() {
-        List<Turno> turnosReservados = turnoRepository.findByDisponibleFalseOrderByFechaHoraAsc();
-        return turnosReservados.stream()
-                .map(turnoMapper::toAdminDTO)
-                .collect(Collectors.toList());
+    public List<Turno> obtenerTurnosNoDisponibles() {
+        return turnoRepository.findByDisponibleFalseOrderByFechaHoraAsc();
     }
 
     @Override

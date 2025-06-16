@@ -6,7 +6,6 @@ import java.util.List;
 import com.unla.grupo16.exception.NegocioException;
 import com.unla.grupo16.models.dtos.requests.TurnoRequestDTO;
 import com.unla.grupo16.models.dtos.responses.DisponibilidadResponseDTO;
-import com.unla.grupo16.models.dtos.responses.TurnoAdminDTO;
 import com.unla.grupo16.models.dtos.responses.TurnoResponseDTO;
 import com.unla.grupo16.models.entities.Servicio;
 import com.unla.grupo16.models.entities.Turno;
@@ -35,6 +34,6 @@ public interface ITurnoService {
 
     List<TurnoResponseDTO> traerSoloTurnosReservados();
 
-    List<TurnoAdminDTO> obtenerTurnosNoDisponibles();
+    List<Turno> obtenerTurnosNoDisponibles();
 
 }

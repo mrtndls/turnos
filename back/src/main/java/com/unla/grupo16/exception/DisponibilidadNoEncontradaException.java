@@ -6,4 +6,8 @@ public class DisponibilidadNoEncontradaException extends RuntimeException {
         super(mensaje);
     }
 
+    public DisponibilidadNoEncontradaException() {
+        super("Error disponibilidad");
+    }
+
 }

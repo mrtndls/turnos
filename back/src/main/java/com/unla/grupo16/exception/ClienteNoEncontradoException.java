@@ -1,7 +1,12 @@
 package com.unla.grupo16.exception;
 
 public class ClienteNoEncontradoException extends NegocioException {
-    public ClienteNoEncontradoException(Long id) {
-        super("No se encontro el cliente con ID " + id);
+
+    public ClienteNoEncontradoException(String message) {
+        super("No se encontro el cliente con ID " + message);
+    }
+
+    public ClienteNoEncontradoException() {
+        super("Error cliente no encontrado");
     }
 }

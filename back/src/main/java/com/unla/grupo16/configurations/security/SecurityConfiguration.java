@@ -49,7 +49,12 @@ public class SecurityConfiguration {
                 .csrf(csrf -> csrf.disable())
                 // Autorización por rutas
                 .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/login").permitAll()
+                .requestMatchers(
+                        "/api/auth/login",
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html"
+                ).permitAll()
                 .requestMatchers("/api/cliente/**").hasRole("USER")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()

@@ -1,74 +1,85 @@
 package com.unla.grupo16.exception;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.http.HttpStatus;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
-@ControllerAdvice
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-
-    @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public String manejarExceptionGeneral(Exception ex, Model model) {
-        logger.error("Error inesperado", ex);
-        model.addAttribute("error", "Ha ocurrido un error inesperado");
-        return "error/500";
+    // Manejador para AutenticacionException
+    @ExceptionHandler(AutenticacionException.class)
+    public ResponseEntity<Map<String, Object>> manejarAutenticacionException(AutenticacionException ex) {
+        return construirResponse(HttpStatus.UNAUTHORIZED, ex.getMessage());
     }
 
-    @ExceptionHandler(RecursoNoEncontradoException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String manejarRecursoNoEncontrado(RecursoNoEncontradoException ex, Model model) {
-        model.addAttribute("error", ex.getMessage());
-        return "error/404"; 
+    // Manejador para UsuarioDeshabilitadoException
+    @ExceptionHandler(UsuarioDeshabilitadoException.class)
+    public ResponseEntity<Map<String, Object>> manejarUsuarioDeshabilitadoException(UsuarioDeshabilitadoException ex) {
+        return construirResponse(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
-    @ExceptionHandler(BaseDeDatosException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public String manejarBaseDeDatos(BaseDeDatosException ex, Model model) {
-        model.addAttribute("error", "Error en base de datos: " + ex.getMessage());
-        return "error/500";
-    }
-
-    @ExceptionHandler(ErrorInternoException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public String manejarErrorInterno(ErrorInternoException ex, Model model) {
-        model.addAttribute("error", "Error interno: " + ex.getMessage());
-        return "error/500";
-    }
-
+    // Manejador para NegocioException (checked exception)
     @ExceptionHandler(NegocioException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public String manejarErrorNegocio(NegocioException ex, Model model) {
-        model.addAttribute("error", "Error de negocio: " + ex.getMessage());
-        return "error/400"; 
+    public ResponseEntity<Map<String, Object>> manejarNegocioException(NegocioException ex) {
+        return construirResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
+    // Manejador para RecursoNoEncontradoException
+    @ExceptionHandler(RecursoNoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> manejarRecursoNoEncontrado(RecursoNoEncontradoException ex) {
+        return construirResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    // Manejador para DisponibilidadNoEncontradaException
+    @ExceptionHandler(DisponibilidadNoEncontradaException.class)
+    public ResponseEntity<Map<String, Object>> manejarDisponibilidadNoEncontrada(DisponibilidadNoEncontradaException ex) {
+        return construirResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    // Manejador para ClienteNoEncontradoException
     @ExceptionHandler(ClienteNoEncontradoException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String manejarClienteNoEncontrado(ClienteNoEncontradoException ex, Model model) {
-        model.addAttribute("error", ex.getMessage());
-        return "error/404";
+    public ResponseEntity<Map<String, Object>> manejarClienteNoEncontrado(ClienteNoEncontradoException ex) {
+        return construirResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
+    // Manejador para ClienteDuplicadoException
     @ExceptionHandler(ClienteDuplicadoException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public String manejarClienteDuplicado(ClienteDuplicadoException ex, Model model) {
-        model.addAttribute("error", ex.getMessage());
-        return "error/400"; 
+    public ResponseEntity<Map<String, Object>> manejarClienteDuplicado(ClienteDuplicadoException ex) {
+        return construirResponse(HttpStatus.CONFLICT, ex.getMessage());
     }
 
-    @ExceptionHandler(InvalidDataAccessApiUsageException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public String manejarIdNulo(InvalidDataAccessApiUsageException ex, Model model) {
-        model.addAttribute("error", "ID invalido o nulo: " + ex.getMessage());
-        return "error/400";
+    // Manejador para BaseDeDatosException y ErrorInternoException
+    @ExceptionHandler({BaseDeDatosException.class, ErrorInternoException.class})
+    public ResponseEntity<Map<String, Object>> manejarErrorInterno(RuntimeException ex) {
+        // Para no filtrar el mensaje real en producción podrías poner un mensaje genérico
+        return construirResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno del servidor.");
     }
 
+    // Handler para IllegalArgumentException (por ejemplo en validaciones)
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> manejarIllegalArgument(IllegalArgumentException ex) {
+        return construirResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    // Manejador genérico para cualquier otra excepción no capturada
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>> manejarExcepcionGenerica(Exception ex) {
+        return construirResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Ocurrió un error inesperado.");
+    }
+
+    // Método auxiliar para construir la respuesta de error en formato JSON
+    private ResponseEntity<Map<String, Object>> construirResponse(HttpStatus status, String mensaje) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("estado", status.value());
+        body.put("error", status.getReasonPhrase());
+        body.put("mensaje", mensaje);
+        return new ResponseEntity<>(body, status);
+    }
 }

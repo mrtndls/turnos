@@ -11,18 +11,16 @@ import lombok.Setter;
 @AllArgsConstructor
 public class TurnoResponseDTO {
 
-    private Integer id;
+    private Integer id; // ID del turno creado
 
-    private String fecha;             // Fecha separada, ej: "2025-06-13"
-    private String hora;              // Hora separada, ej: "09:00"
+    private String fecha;             // ej: "2025-06-13"
+    private String hora;              // ej: "09:00"
 
-    private String nombreCliente;
-    private String nombreEmpleado;
     private String nombreServicio;
-
     private String ubicacionDescripcion;
+    private String nombreEmpleado;    // puede ser null o "A confirmar"
+    private String nombreCliente;
 
-    private String observaciones;
-    private String codigoAnulacion;
-
+    private String observaciones;     // opcional
+    private String codigoAnulacion;   // importante para anulación
 }

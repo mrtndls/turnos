@@ -25,35 +25,23 @@ export interface UbicacionResponseDTO {
 // ---------------------
 
 export interface TurnoRequestDTO {
+  idCliente?: number;         // opcional, si se usa en backend
   idServicio: number;
   idUbicacion: number;
-  fecha: string; // ISO format: "2025-06-12"
-  hora: string;  // Ej: "09:00"
+  fecha: string;             // formato ISO "YYYY-MM-DD"
+  hora: string;              // ejemplo "09:00"
+  observaciones?: string;    // opcional
 }
 
-// ---------------------
-// DTO para Confirmar Turno (Preview)
-// ---------------------
-
-export interface TurnoPreviewDTO {
-  idServicio: number;
-  idUbicacion: number;
-  fecha: string;
-  hora: string;
-}
-
-// ---------------------
-// DTO para Respuesta de Turno
-// ---------------------
 
 export interface TurnoResponseDTO {
   id: number;
-  fecha: string;                // Ej: "2025-06-13"
-  hora: string;                 // Ej: "09:00"
-  nombreCliente: string | null; // Opcionalmente null
-  nombreEmpleado: string | null;
+  fecha: string;                 // Ej: "2025-06-13"
+  hora: string;                  // Ej: "09:00"
   nombreServicio: string | null;
   ubicacionDescripcion: string;
-  observaciones: string;
+  nombreEmpleado: string | null; // puede ser null o "A confirmar"
+  nombreCliente: string | null;
+  observaciones?: string;
   codigoAnulacion: string;
 }

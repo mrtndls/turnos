@@ -1,6 +1,5 @@
 package com.unla.grupo16.controllers;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -10,20 +9,26 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.unla.grupo16.configurations.security.jwt.JwtUtil;
+import com.unla.grupo16.exception.AutenticacionException;
+import com.unla.grupo16.exception.RecursoNoEncontradoException;
+import com.unla.grupo16.exception.UsuarioDeshabilitadoException;
 import com.unla.grupo16.models.dtos.requests.LoginRequestDTO;
-import com.unla.grupo16.models.dtos.responses.ErrorResponseDTO;
-import com.unla.grupo16.models.dtos.responses.UserLoginResponseDto;
+import com.unla.grupo16.models.dtos.responses.LoginResponseDto;
 import com.unla.grupo16.models.entities.Persona;
 import com.unla.grupo16.models.entities.UserEntity;
 import com.unla.grupo16.repositories.IUserRepository;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
-@RestController // Devuelve respuestas en formato JSON
-@RequestMapping("/api/auth") // Prefijo para todas las rutas de este controlador
+@Tag(name = "Autenticación", description = "Autenticación de usuarios mediante JWT")
+@RestController
+@RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -36,14 +41,16 @@ public class AuthController {
         this.userRepo = userRepo;
     }
 
-    /**
-     * Endpoint para autenticación de usuarios.
-     *
-     * @param loginRequest contiene email y contraseña.
-     * @return JWT token + info del usuario autenticado o error.
-     */
+    @Operation(summary = "Autenticar usuario y generar JWT")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Autenticación exitosa"),
+        @ApiResponse(responseCode = "401", description = "Credenciales inválidas"),
+        @ApiResponse(responseCode = "403", description = "Usuario deshabilitado"),
+        @ApiResponse(responseCode = "404", description = "Usuario no encontrado"),
+        @ApiResponse(responseCode = "500", description = "Error inesperado")
+    })
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
+    public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
         try {
             var authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -53,39 +60,26 @@ public class AuthController {
             );
 
             var authenticatedUser = (UserDetails) authentication.getPrincipal();
-            String token = jwtUtil.generateToken(authenticatedUser);
 
-            // Obtener usuario completo con sus roles y persona
             UserEntity user = userRepo.findByEmailWithPersona(authenticatedUser.getUsername())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
 
-            // Verificar si el usuario está habilitado
             if (!user.isEnabled()) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                        new ErrorResponseDTO("El usuario está deshabilitado", 403)
-                );
+                throw new UsuarioDeshabilitadoException("El usuario está deshabilitado");
             }
 
-            // Obtener primer rol del usuario (por simplicidad, solo uno)
+            String token = jwtUtil.generateToken(authenticatedUser);
+
             String rol = user.getRoleEntities().stream()
                     .findFirst()
                     .map(role -> role.getType().name())
                     .orElse("USER");
 
             Persona persona = user.getPersona();
+            Integer id = persona != null ? persona.getIdPersona() : user.getId();
+            String nombreCompleto = persona != null ? persona.getNombreCompleto() : user.getEmail();
 
-            Integer id;
-            String nombreCompleto;
-
-            if (persona != null) {
-                id = persona.getIdPersona();
-                nombreCompleto = persona.getNombreCompleto();
-            } else {
-                id = user.getId(); // Asumiendo UserEntity tiene getId()
-                nombreCompleto = user.getEmail();
-            }
-
-            var response = new UserLoginResponseDto(
+            var response = new LoginResponseDto(
                     token,
                     user.getEmail(),
                     rol,
@@ -96,11 +90,7 @@ public class AuthController {
             return ResponseEntity.ok(response);
 
         } catch (AuthenticationException ex) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ErrorResponseDTO("Credenciales inválidas", 401));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponseDTO("Error inesperado", 500));
+            throw new AutenticacionException("Credenciales inválidas");
         }
     }
 }

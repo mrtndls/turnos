@@ -5,4 +5,8 @@ public class RecursoNoEncontradoException extends RuntimeException {
     public RecursoNoEncontradoException(String mensaje) {
         super(mensaje);
     }
+
+    public RecursoNoEncontradoException() {
+        super("Error recurso no encontrado");
+    }
 }
