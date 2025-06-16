@@ -1,17 +1,22 @@
 // src/components/ReservaTurno.tsx
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ServicioResponseDTO, UbicacionResponseDTO } from "../types/turno";
 import ServiciosList from "./ServiciosList";
 import UbicacionesList from "./UbicacionesList";
-import DiasDisponiblesList from "./DiasDisponiblesList";
+import CalendarioTurnos from "./CalendarioTurnos"; // calendario nuevo
 import HorariosDisponiblesList from "./HorariosDisponiblesList";
 import ConfirmarTurno from "./ConfirmarTurno";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 const ReservaTurno: React.FC = () => {
+  useDocumentTitle("ReservaTurno");
+
   const [servicio, setServicio] = useState<ServicioResponseDTO | null>(null);
   const [ubicacion, setUbicacion] = useState<UbicacionResponseDTO | null>(null);
   const [fecha, setFecha] = useState<string | null>(null);
   const [hora, setHora] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   return (
     <>
@@ -23,10 +28,7 @@ const ReservaTurno: React.FC = () => {
           onSelectUbicacion={setUbicacion}
         />
       ) : !fecha ? (
-        <DiasDisponiblesList
-          servicioId={servicio.id}
-          onSelectFecha={setFecha}
-        />
+        <CalendarioTurnos servicioId={servicio.id} onSelectFecha={setFecha} />
       ) : !hora ? (
         <HorariosDisponiblesList
           servicioId={servicio.id}
@@ -45,6 +47,7 @@ const ReservaTurno: React.FC = () => {
             setUbicacion(null);
             setFecha(null);
             setHora(null);
+            navigate("/dashboard/cliente/menu"); // 🔁 Redirige al menú
           }}
         />
       )}

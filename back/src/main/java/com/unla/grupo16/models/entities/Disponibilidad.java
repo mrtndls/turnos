@@ -5,18 +5,19 @@ import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Set;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.Builder;
 
 @Builder
 @Entity
@@ -35,7 +36,12 @@ public class Disponibilidad {
     private LocalTime horaInicio;
     private LocalTime horaFin;
 
-    @OneToMany(mappedBy = "disponibilidad", cascade = CascadeType.ALL)
+    @ManyToMany
+    @JoinTable(
+            name = "disponibilidad_servicio",
+            joinColumns = @JoinColumn(name = "disponibilidad_id"),
+            inverseJoinColumns = @JoinColumn(name = "servicio_id")
+    )
     @Builder.Default
     private Set<Servicio> servicios = new HashSet<>();
 }

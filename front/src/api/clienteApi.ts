@@ -6,20 +6,20 @@ import {
   TurnoResponseDTO,
 } from "../types/turno";
 
-const API_BASE_CLIENTE = "http://localhost:8080/api/cliente/turnos";
-const API_BASE_ADMIN = "http://localhost:8080/api/admin/turnos";
+export interface TurnoPreviewDTO {
+  idServicio: number;
+  idUbicacion: number;
+  fecha: string;
+  hora: string;
+}
+
+const API_BASE_CLIENTE = "http://localhost:8080/api/cliente";
 
 const axiosInstanceCliente = axios.create({
   baseURL: API_BASE_CLIENTE,
   timeout: 5000,
 });
 
-const axiosInstanceAdmin = axios.create({
-  baseURL: API_BASE_ADMIN,
-  timeout: 5000,
-});
-
-// Interceptores para cliente
 axiosInstanceCliente.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -40,28 +40,8 @@ axiosInstanceCliente.interceptors.response.use(
   }
 );
 
-// Interceptores para admin (igual que cliente)
-axiosInstanceAdmin.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers = config.headers || {};
-    config.headers["Authorization"] = `Bearer ${token}`;
-  }
-  return config;
-}, (error) => Promise.reject(error));
+// Métodos cliente
 
-axiosInstanceAdmin.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
-    }
-    return Promise.reject(error);
-  }
-);
-
-// Métodos para cliente (sin cambios)
 export const anularTurno = async (codigoAnulacion: string): Promise<string> => {
   const { data } = await axiosInstanceCliente.post("/anular", null, {
     params: { codigoAnulacion },
@@ -69,13 +49,10 @@ export const anularTurno = async (codigoAnulacion: string): Promise<string> => {
   return data.mensaje;
 };
 
-export const confirmarDatosTurno = async (turno: TurnoRequestDTO): Promise<any> => {
+export const confirmarDatosTurno = async (
+  turno: TurnoPreviewDTO
+): Promise<any> => {
   const { data } = await axiosInstanceCliente.post("/confirmar", turno);
-  return data;
-};
-
-export const fetchAllTurnosCliente = async (): Promise<TurnoResponseDTO[]> => {
-  const { data } = await axiosInstanceCliente.get("/");
   return data;
 };
 
@@ -111,15 +88,20 @@ export const fetchHorariosDisponibles = async (
   return data;
 };
 
+export const fetchFechasHabilitadas = async (
+  servicioId: number,
+  year: number,
+  month: number
+): Promise<string[]> => {
+  const { data } = await axiosInstanceCliente.get(`/servicios/${servicioId}/fechas-habilitadas`, {
+    params: { year, month },
+  });
+  return data;
+};
+
 export const crearTurno = async (
   turno: TurnoRequestDTO
 ): Promise<TurnoResponseDTO> => {
   const { data } = await axiosInstanceCliente.post("", turno);
-  return data;
-};
-
-// Métodos para admin
-export const fetchAllTurnos = async (): Promise<TurnoResponseDTO[]> => {
-  const { data } = await axiosInstanceAdmin.get("/");
   return data;
 };

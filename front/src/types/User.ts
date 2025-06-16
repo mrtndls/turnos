@@ -4,5 +4,6 @@
 export interface User {
   email: string;
   token: string;
-  rol: "ADMIN" | "USER"; 
+  rol: "ADMIN" | "USER";
 }
+

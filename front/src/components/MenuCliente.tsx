@@ -1,8 +1,11 @@
 // src/components/MenuCliente.tsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 export default function MenuCliente() {
+  useDocumentTitle("MenuCliente");
+
   const navigate = useNavigate();
 
   return (

@@ -24,7 +24,9 @@ import com.unla.grupo16.configurations.mapper.ServicioMapper;
 import com.unla.grupo16.configurations.mapper.UbicacionMapper;
 import com.unla.grupo16.exception.NegocioException;
 import com.unla.grupo16.models.dtos.requests.TurnoRequestDTO;
+import com.unla.grupo16.models.dtos.responses.DisponibilidadResponseDTO;
 import com.unla.grupo16.models.dtos.responses.ServicioResponseDTO;
+import com.unla.grupo16.models.dtos.responses.TurnoPreviewDTO;
 import com.unla.grupo16.models.dtos.responses.TurnoResponseDTO;
 import com.unla.grupo16.models.dtos.responses.UbicacionResponseDTO;
 import com.unla.grupo16.models.entities.Cliente;
@@ -35,7 +37,7 @@ import com.unla.grupo16.repositories.IUserRepository;
 import com.unla.grupo16.services.interfaces.ITurnoService;
 
 @RestController
-@RequestMapping("/api/cliente/turnos")
+@RequestMapping("/api/cliente")
 @PreAuthorize("hasRole('USER')")
 public class ClienteTurnoRestController {
 
@@ -62,12 +64,14 @@ public class ClienteTurnoRestController {
         this.ubicacionMapper = ubicacionMapper;
     }
 
+    // listar servicios
     @GetMapping("/servicios")
     public ResponseEntity<List<ServicioResponseDTO>> listarServicios() {
         List<Servicio> servicios = servicioRepository.findAll();
         return ResponseEntity.ok(servicioMapper.toDTOList(servicios));
     }
 
+    // listar ubicaciones por servicio
     @GetMapping("/servicios/{servicioId}/ubicaciones")
     public ResponseEntity<List<UbicacionResponseDTO>> listarUbicaciones(@PathVariable Integer servicioId) {
         Servicio servicio = servicioRepository.findById(servicioId)
@@ -76,14 +80,17 @@ public class ClienteTurnoRestController {
         return ResponseEntity.ok(ubicacionMapper.toDTOList(servicio.getUbicaciones()));
     }
 
+    // fechas disponibles para turno
     @GetMapping("/servicios/{servicioId}/dias-disponibles")
     public ResponseEntity<List<LocalDate>> diasDisponibles(@PathVariable Integer servicioId) {
         Servicio servicio = servicioRepository.findById(servicioId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Servicio no encontrado"));
 
-        return ResponseEntity.ok(turnoService.obtenerDiasDisponiblesParaServicio(servicio));
+        List<LocalDate> dias = turnoService.obtenerDiasDisponiblesParaServicio(servicio);
+        return ResponseEntity.ok(dias);
     }
 
+    // horarios disponibles
     @GetMapping("/servicios/{servicioId}/fechas/{fecha}/horarios")
     public ResponseEntity<List<String>> horariosDisponibles(
             @PathVariable Integer servicioId,
@@ -91,11 +98,11 @@ public class ClienteTurnoRestController {
         return ResponseEntity.ok(turnoService.getHorariosDisponibles(servicioId, fecha));
     }
 
+    // previsualizar turno antes de crear
     @PostMapping("/confirmar")
-    public ResponseEntity<Map<String, Object>> confirmarDatos(@RequestBody TurnoRequestDTO dto, Principal principal) {
-        Cliente cliente = getClienteAutenticado(principal);
-
+    public ResponseEntity<Map<String, Object>> confirmarDatos(@RequestBody TurnoPreviewDTO dto) {
         Map<String, Object> datos = new HashMap<>();
+
         servicioRepository.findById(dto.getIdServicio())
                 .ifPresent(s -> datos.put("servicio", servicioMapper.toDTO(s)));
 
@@ -108,6 +115,7 @@ public class ClienteTurnoRestController {
         return ResponseEntity.ok(datos);
     }
 
+    // crear turno
     @PostMapping
     public ResponseEntity<TurnoResponseDTO> crearTurno(@RequestBody TurnoRequestDTO dto, Principal principal) {
         Cliente cliente = getClienteAutenticado(principal);
@@ -120,6 +128,7 @@ public class ClienteTurnoRestController {
         }
     }
 
+    // anular turno con codigo
     @PostMapping("/anular")
     public ResponseEntity<Map<String, String>> anularTurno(@RequestParam String codigoAnulacion) {
         try {
@@ -130,12 +139,38 @@ public class ClienteTurnoRestController {
         }
     }
 
+    // ver turnos del cliente
     @GetMapping("/mis-turnos")
     public ResponseEntity<List<TurnoResponseDTO>> getTurnosDelCliente(Principal principal) {
         Cliente cliente = getClienteAutenticado(principal);
         return ResponseEntity.ok(turnoService.obtenerTurnosPorCliente(cliente.getId()));
     }
 
+    // disponibilidad en dia puntual
+    @GetMapping("/servicio/{servicioId}/disponibilidad/{fecha}")
+    public ResponseEntity<DisponibilidadResponseDTO> getDisponibilidadPorDia(
+            @PathVariable Integer servicioId,
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
+        DisponibilidadResponseDTO dto = turnoService.obtenerDisponibilidadPorDiaYServicio(fecha, servicioId);
+        return ResponseEntity.ok(dto);
+    }
+
+    // fechas habilitadas del mes
+    @GetMapping("/servicios/{servicioId}/fechas-habilitadas")
+    public ResponseEntity<List<String>> obtenerFechasHabilitadas(
+            @PathVariable Integer servicioId,
+            @RequestParam Integer year,
+            @RequestParam Integer month) {
+
+        Servicio servicio = servicioRepository.findById(servicioId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Servicio no encontrado"));
+
+        List<String> fechasHabilitadas = turnoService.obtenerFechasHabilitadasPorMes(servicio, year, month);
+
+        return ResponseEntity.ok(fechasHabilitadas);
+    }
+
+    // metodo interno : garantiza que solo un cliente pueda operar
     private Cliente getClienteAutenticado(Principal principal) {
         return userRepo.findByEmailConPersona(principal.getName())
                 .map(user -> Hibernate.unproxy(user.getPersona()))

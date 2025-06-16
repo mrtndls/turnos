@@ -1,8 +1,11 @@
 // src/components/MenuAdmin.tsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 export default function MenuAdmin() {
+  useDocumentTitle("MenuAdmin");
+
   const navigate = useNavigate();
 
   return (
@@ -14,6 +17,12 @@ export default function MenuAdmin() {
           className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
         >
           Ver todos los turnos
+        </button>
+        <button
+          onClick={() => navigate("/dashboard/admin/clientes")}
+          className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
+        >
+          Ver todos los clientes
         </button>
       </div>
     </div>

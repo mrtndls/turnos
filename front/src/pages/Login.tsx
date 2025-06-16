@@ -12,8 +12,11 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
 import { loginUser } from "../api/authService";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 const Login: React.FC = () => {
+  useDocumentTitle("Login - Sistema de Turnos");
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");

@@ -1,10 +1,13 @@
 package com.unla.grupo16.configurations.security.jwt;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -14,6 +17,8 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.unla.grupo16.models.dtos.responses.ErrorResponseDTO;
 import com.unla.grupo16.services.impl.UserServiceImp;
 
 import jakarta.servlet.FilterChain;
@@ -21,6 +26,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+// extiende OncePerRequestFilter : garantiza una sola ejecucion por request
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -31,75 +37,65 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private UserServiceImp userDetailsService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain chain)
             throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
-        System.out.println("[JWT FILTER] Authorization header: " + authHeader);
-
         String username = null;
         String jwt = null;
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);
-            System.out.println("[JWT FILTER] Token recibido: " + jwt);
             try {
                 username = jwtUtil.getUsernameFromToken(jwt);
-                System.out.println("[JWT FILTER] Username extraído del token: " + username);
             } catch (Exception e) {
-                System.out.println("[JWT FILTER] Error al extraer username del token: " + e.getMessage());
+                // Error al parsear el token
+                setErrorResponse(response, HttpStatus.UNAUTHORIZED, "Token inválido");
+                return;
             }
-        } else {
-            System.out.println("[JWT FILTER] Header Authorization ausente o mal formado");
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            System.out.println("[JWT FILTER] Cargando UserDetails para: " + username);
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
             if (jwtUtil.validateToken(jwt, userDetails)) {
-                System.out.println("[JWT FILTER] Token validado correctamente");
-
-                // Extraer roles del token, si tienes método
-                List<String> roles = null;
+                List<String> roles;
                 try {
                     roles = jwtUtil.getRolesFromToken(jwt);
-                    System.out.println("[JWT FILTER] Roles extraídos del token: " + roles);
                 } catch (Exception e) {
-                    System.out.println("[JWT FILTER] No se pudo extraer roles del token o método no implementado");
+                    roles = null;
                 }
 
-                List<GrantedAuthority> authorities;
-                if (roles != null) {
-                    authorities = roles.stream()
-                            .map(SimpleGrantedAuthority::new)
-                            .collect(Collectors.toList());
-                } else {
-                    // fallback: tomar roles del UserDetails si no hay método getRolesFromToken
-                    authorities = userDetails.getAuthorities().stream().collect(Collectors.toList());
-                    System.out.println("[JWT FILTER] Roles obtenidos de UserDetails: " + authorities);
-                }
+                List<GrantedAuthority> authorities = (roles != null)
+                        ? roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList())
+                        : new ArrayList<>(userDetails.getAuthorities());
 
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, authorities);
 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
                 SecurityContextHolder.getContext().setAuthentication(authToken);
-                System.out.println("[JWT FILTER] Autenticación seteada en SecurityContext");
             } else {
-                System.out.println("[JWT FILTER] Token inválido o expirado");
-            }
-        } else {
-            if (username == null) {
-                System.out.println("[JWT FILTER] Username es null, no se crea contexto de seguridad");
-            }
-            if (SecurityContextHolder.getContext().getAuthentication() != null) {
-                System.out.println("[JWT FILTER] Ya existe autenticación en contexto");
+                setErrorResponse(response, HttpStatus.UNAUTHORIZED, "Token expirado o inválido");
+                return;
             }
         }
 
         chain.doFilter(request, response);
     }
 
+    private void setErrorResponse(HttpServletResponse response, HttpStatus status, String mensaje)
+            throws IOException {
+        response.setStatus(status.value());
+        response.setContentType("application/json");
+        ErrorResponseDTO error = ErrorResponseDTO.builder()
+                .codigo(status.value())
+                .mensaje(mensaje)
+                .build();
+
+        ObjectMapper mapper = new ObjectMapper();
+        response.getWriter().write(mapper.writeValueAsString(error));
+    }
 }

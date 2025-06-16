@@ -12,17 +12,17 @@ import lombok.Setter;
 public class TurnoResponseDTO {
 
     private Integer id;
-    private String estado;
 
-    private String fecha; // 👈 NUEVO
-    private String hora;  // 👈 NUEVO
-
-    private String fechaHora; // Opcional, podés eliminarlo si no lo usás más
+    private String fecha;             // Fecha separada, ej: "2025-06-13"
+    private String hora;              // Hora separada, ej: "09:00"
 
     private String nombreCliente;
     private String nombreEmpleado;
     private String nombreServicio;
+
     private String ubicacionDescripcion;
+
     private String observaciones;
     private String codigoAnulacion;
+
 }

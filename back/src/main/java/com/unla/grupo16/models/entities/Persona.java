@@ -30,7 +30,7 @@ public abstract class Persona {
 
     @NotBlank
     @Column(name = "nombre_persona")
-    private String nombre;
+    protected String nombre;
 
     @NotBlank
     @Column(name = "apellido_persona")
@@ -40,4 +40,12 @@ public abstract class Persona {
     @Column(name = "dni_persona")
     private String dni;
 
+    // ✅ Lógica común implementada acá
+    public String getNombreCompleto() {
+        return this.nombre + " " + this.apellido;
+    }
+
+    public Integer getIdPersona() {
+        return this.id;
+    }
 }

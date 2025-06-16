@@ -31,9 +31,9 @@ public class Turno {
 
     private String observaciones;
 
-    private String estado;
-
     private String codigoAnulacion;
+
+    private boolean disponible;
 
     @ManyToOne
     private Empleado empleado;

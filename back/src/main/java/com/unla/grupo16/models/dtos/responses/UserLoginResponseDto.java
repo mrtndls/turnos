@@ -1,5 +1,6 @@
 package com.unla.grupo16.models.dtos.responses;
 
+// es la rta q se envia al cliente despues del login OK
 public record UserLoginResponseDto(
         String token,
         String email,

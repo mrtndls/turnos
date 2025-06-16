@@ -1,7 +1,8 @@
 // src/types/turno.ts
 
-// dto
-// Esto es fundamental para que TypeScript controle tipos y evitar errores.
+// ---------------------
+// DTOs para Servicios
+// ---------------------
 
 export interface ServicioResponseDTO {
   id: number;
@@ -9,30 +10,50 @@ export interface ServicioResponseDTO {
   descripcion?: string;
 }
 
+// ---------------------
+// DTOs para Ubicaciones
+// ---------------------
+
 export interface UbicacionResponseDTO {
   id: number;
   nombre: string;
   direccion?: string;
 }
 
+// ---------------------
+// DTO para Crear Turno
+// ---------------------
+
 export interface TurnoRequestDTO {
-  //idCliente: number;
   idServicio: number;
   idUbicacion: number;
-  fecha: string;   // ISO string: "2025-06-12"
-  hora: string;    // Ej: "09:00"
+  fecha: string; // ISO format: "2025-06-12"
+  hora: string;  // Ej: "09:00"
 }
+
+// ---------------------
+// DTO para Confirmar Turno (Preview)
+// ---------------------
+
+export interface TurnoPreviewDTO {
+  idServicio: number;
+  idUbicacion: number;
+  fecha: string;
+  hora: string;
+}
+
+// ---------------------
+// DTO para Respuesta de Turno
+// ---------------------
 
 export interface TurnoResponseDTO {
   id: number;
-  codigoAnulacion: string;
-  estado: string;
-  nombreServicio: string;
+  fecha: string;                // Ej: "2025-06-13"
+  hora: string;                 // Ej: "09:00"
+  nombreCliente: string | null; // Opcionalmente null
+  nombreEmpleado: string | null;
+  nombreServicio: string | null;
   ubicacionDescripcion: string;
   observaciones: string;
-
-  // Asegúrate de tener las nuevas propiedades
-  fecha: string;  // Ej: "2025-06-13"
-  hora: string;   // Ej: "09:00"
+  codigoAnulacion: string;
 }
-

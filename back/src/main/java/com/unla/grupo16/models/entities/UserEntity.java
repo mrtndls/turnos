@@ -59,11 +59,11 @@ public class UserEntity implements UserDetails {
     @Column(name = "baja_usuario", nullable = false)
     private boolean activo;
 
-    @Column(name = "fechaC_usuario")
+    @Column(name = "createdAt")
     @CreationTimestamp
     private Timestamp createdAt;
 
-    @Column(name = "fechaM_usuario")
+    @Column(name = "updatedAt")
     @UpdateTimestamp
     private Timestamp updatedAt;
 

@@ -1,16 +1,29 @@
 // src/components/HorariosDisponiblesList.tsx
 import React, { useEffect, useState } from "react";
-import { fetchHorariosDisponibles } from "../api/turnoApi";
+import { fetchHorariosDisponibles } from "../api/clienteApi";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 interface Props {
   servicioId: number;
-  fecha: string;
+  fecha: string; // "yyyy-MM-dd"
   onSelectHora: (hora: string) => void;
 }
 
-const HorariosDisponiblesList: React.FC<Props> = ({ servicioId, fecha, onSelectHora }) => {
+const HorariosDisponiblesList: React.FC<Props> = ({
+  servicioId,
+  fecha,
+  onSelectHora,
+}) => {
+  useDocumentTitle("HorariosDisponiblesList");
+
   const [horarios, setHorarios] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Convierte "yyyy-MM-dd" a Date en zona local
+  const parseDateLocal = (dateString: string): Date => {
+    const [year, month, day] = dateString.split("-").map(Number);
+    return new Date(year, month - 1, day);
+  };
 
   useEffect(() => {
     const loadHorarios = async () => {
@@ -30,7 +43,9 @@ const HorariosDisponiblesList: React.FC<Props> = ({ servicioId, fecha, onSelectH
 
   return (
     <div>
-      <h3>Horarios disponibles para {new Date(fecha).toLocaleDateString()}</h3>
+      <h3>
+        Horarios disponibles para {parseDateLocal(fecha).toLocaleDateString()}
+      </h3>
       <ul>
         {horarios.map((hora, index) => (
           <li key={index}>

@@ -62,36 +62,36 @@ public class UsersSeeder implements CommandLineRunner {
                 .roleEntities(Set.of(roleRepository.findByType(RoleType.ADMIN).orElseThrow(()
                         -> new RuntimeException("Role ADMIN no encontrado"))))
                 .build();
-        System.out.println("\n\nCreando usuario admin: " + email);
+        System.out.println("\n\n**ADMIN**\nusername: " + email + "\npassword:" + password);
         userRepository.save(admin);
     }
 
-private void createClientUser(String email, String password) {
-    Cliente cliente = new Cliente();
-    cliente.setNombre("Cliente");
-    cliente.setApellido("Cliente");
-    cliente.setDni("123456789");
-    cliente.setCuil("20-12345678-9");
+    private void createClientUser(String email, String password) {
+        Cliente cliente = new Cliente();
+        cliente.setNombre("Martin");
+        cliente.setApellido("Diale");
+        cliente.setDni("4123");
+        cliente.setCuil("20-4123-9");
 
-    // Persisto primero el cliente para que tenga ID y sea "managed"
-    clienteRepository.save(cliente);
+        // Persisto primero el cliente para que tenga ID y sea "managed"
+        clienteRepository.save(cliente);
 
-    UserEntity client = UserEntity.builder()
-            .email(email)
-            .activo(true)
-            .password(passwordEncoder.encode(password))
-            .roleEntities(Set.of(roleRepository.findByType(RoleType.USER).orElseThrow(()
-                    -> new RuntimeException("Role USER no encontrado"))))
-            .persona(cliente)  // Cliente ya guardado y persistente
-            .build();
-    System.out.println("\n\nCreando usuario cliente: " + email);
-    userRepository.save(client);
-}
-
+        UserEntity client = UserEntity.builder()
+                .email(email)
+                .activo(true)
+                .password(passwordEncoder.encode(password))
+                .roleEntities(Set.of(roleRepository.findByType(RoleType.USER).orElseThrow(()
+                        -> new RuntimeException("Role USER no encontrado"))))
+                .persona(cliente) // Cliente ya guardado y persistente
+                .build();
+        System.out.println("\n\n**CLIENTE**\nusername: " + email + "\npassword:" + password + "\n");
+        userRepository.save(client);
+    }
 
     private RoleEntity buildRole(RoleType roleType) {
         return RoleEntity.builder()
                 .type(roleType)
                 .build();
     }
+    
 }

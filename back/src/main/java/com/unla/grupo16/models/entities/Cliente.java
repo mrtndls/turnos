@@ -1,6 +1,6 @@
 package com.unla.grupo16.models.entities;
 
-import java.util.HashSet; 
+import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.persistence.CascadeType;
@@ -19,7 +19,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@ToString(exclude = "turnos")  
+@ToString(exclude = "turnos")
 public class Cliente extends Persona {
 
     private String cuil;

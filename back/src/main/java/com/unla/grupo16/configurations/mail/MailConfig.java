@@ -2,6 +2,7 @@ package com.unla.grupo16.configurations.mail;
 
 import java.util.Properties;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -12,11 +13,14 @@ public class MailConfig {
     // configura el sv SMTP de gmail
     // para enviar mails desde la aplicacion
     // como y donde se conect
-    //@Value("${MAIL_USERNAME}")
-    private String username = "martinabeldialessio@gmail.com";
+    //private String username = "martinabeldialessio@gmail.com";
+    //private String password = "bmqjzqcifpjvrtsw";
+    
+    @Value("${MAIL_USERNAME}")
+    private String username;
 
-    //@Value("${MAIL_PASSWORD}")
-    private String password = "bmqjzqcifpjvrtsw";
+    @Value("${MAIL_PASSWORD}")
+    private String password;
 
     @Bean
     public JavaMailSenderImpl mailSender() {

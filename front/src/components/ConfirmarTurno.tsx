@@ -1,6 +1,7 @@
 import React from "react";
-import { crearTurno } from "../api/turnoApi";
+import { crearTurno } from "../api/clienteApi";
 import { ServicioResponseDTO, UbicacionResponseDTO } from "../types/turno";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 interface Props {
   servicio: ServicioResponseDTO;
@@ -19,6 +20,8 @@ const ConfirmarTurno: React.FC<Props> = ({
   onVolver,
   onConfirmar,
 }) => {
+  useDocumentTitle("ConfirmarTurno");
+
   const handleConfirmar = async () => {
     try {
       const turno = await crearTurno({
@@ -41,7 +44,7 @@ const ConfirmarTurno: React.FC<Props> = ({
       <h3>Confirmar turno</h3>
       <p>Servicio: {servicio.nombre}</p>
       <p>Ubicación: {ubicacion.direccion}</p>
-      <p>Fecha: {new Date(fecha).toLocaleDateString()}</p>
+      <p>Fecha: {fecha.split("-").reverse().join("/")}</p>
       <p>Hora: {hora}</p>
       <button onClick={handleConfirmar}>Confirmar</button>
       <button onClick={onVolver}>Volver</button>

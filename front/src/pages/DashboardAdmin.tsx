@@ -4,6 +4,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 
 const DashboardAdmin: React.FC = () => {
+
   const { email, logout } = useAuth();
   const navigate = useNavigate();
 

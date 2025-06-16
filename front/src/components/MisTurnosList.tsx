@@ -1,9 +1,12 @@
 // components/MisTurnosList.tsx
 import React, { useEffect, useState } from "react";
-import { fetchMisTurnos } from "../api/turnoApi";
+import { fetchMisTurnos } from "../api/clienteApi";
 import { TurnoResponseDTO } from "../types/turno";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 export default function MisTurnosList() {
+  useDocumentTitle("MisTurnosList");
+
   const [turnos, setTurnos] = useState<TurnoResponseDTO[]>([]);
   const [error, setError] = useState("");
 
@@ -42,7 +45,7 @@ export default function MisTurnosList() {
             <th style={headerCellStyle}>Ubicación</th>
             <th style={headerCellStyle}>Fecha</th>
             <th style={headerCellStyle}>Hora</th>
-            <th style={headerCellStyle}>Estado</th>
+            <th style={headerCellStyle}>Empleado</th>
             <th style={headerCellStyle}>Código Anulación</th>
           </tr>
         </thead>
@@ -64,7 +67,9 @@ export default function MisTurnosList() {
               </td>
               <td style={bodyCellStyle}>{turno.fecha}</td>
               <td style={bodyCellStyle}>{turno.hora}</td>
-              <td style={bodyCellStyle}>{turno.estado}</td>
+              <td style={bodyCellStyle}>
+                {turno.nombreEmpleado || "Sin empleado"}
+              </td>
               <td style={bodyCellStyle}>{turno.codigoAnulacion || "-"}</td>
             </tr>
           ))}

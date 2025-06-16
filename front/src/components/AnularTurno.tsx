@@ -1,7 +1,10 @@
 import React, { useState } from "react";
-import { anularTurno } from "../api/turnoApi";
+import { anularTurno } from "../api/clienteApi";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 export default function AnularTurno() {
+  useDocumentTitle("AnularTurno");
+
   const [codigo, setCodigo] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");

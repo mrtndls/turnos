@@ -1,7 +1,8 @@
 // src/components/UbicacionesList.tsx
 import React, { useEffect, useState } from "react";
 import { UbicacionResponseDTO } from "../types/turno";
-import { fetchUbicaciones } from "../api/turnoApi";
+import { fetchUbicaciones } from "../api/clienteApi";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 interface Props {
   servicioId: number;
@@ -12,6 +13,8 @@ const UbicacionesList: React.FC<Props> = ({
   servicioId,
   onSelectUbicacion,
 }) => {
+  useDocumentTitle("UbicacionesList");
+
   const [ubicaciones, setUbicaciones] = useState<UbicacionResponseDTO[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -37,9 +40,7 @@ const UbicacionesList: React.FC<Props> = ({
       <ul>
         {ubicaciones.map((u) => (
           <li key={u.id}>
-            <button onClick={() => onSelectUbicacion(u)}>
-              {u.direccion}
-            </button>
+            <button onClick={() => onSelectUbicacion(u)}>{u.direccion}</button>
           </li>
         ))}
       </ul>

@@ -12,7 +12,7 @@ const DashboardCliente: React.FC = () => {
     navigate("/login");
   };
 
-    const handleHome = () => {
+  const handleHome = () => {
     navigate("/dashboard/cliente/menu");
   };
 
@@ -26,14 +26,13 @@ const DashboardCliente: React.FC = () => {
         >
           Cerrar sesión
         </button>
-                <button
+        <button
           onClick={handleHome}
           className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
         >
           Home
         </button>
       </header>
-
 
       {/* ✅ Acá se renderiza el contenido dinámico según la ruta */}
       <Outlet />

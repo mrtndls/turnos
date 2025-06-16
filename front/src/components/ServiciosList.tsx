@@ -1,13 +1,16 @@
 // src/components/ServiciosList.tsx
 import React, { useEffect, useState } from "react";
 import { ServicioResponseDTO } from "../types/turno";
-import { fetchServicios } from "../api/turnoApi";
+import { fetchServicios } from "../api/clienteApi";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 interface Props {
   onSelectServicio: (servicio: ServicioResponseDTO) => void;
 }
 
 const ServiciosList: React.FC<Props> = ({ onSelectServicio }) => {
+  useDocumentTitle("ServiciosList");
+
   const [servicios, setServicios] = useState<ServicioResponseDTO[]>([]);
   const [loading, setLoading] = useState(true);
 

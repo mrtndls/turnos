@@ -1,13 +1,19 @@
 // src/components/DiasDisponiblesList.tsx
 import React, { useEffect, useState } from "react";
-import { fetchDiasDisponibles } from "../api/turnoApi";
+import { fetchDiasDisponibles } from "../api/clienteApi";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 interface Props {
   servicioId: number;
   onSelectFecha: (fecha: string) => void;
 }
 
-const DiasDisponiblesList: React.FC<Props> = ({ servicioId, onSelectFecha }) => {
+const DiasDisponiblesList: React.FC<Props> = ({
+  servicioId,
+  onSelectFecha,
+}) => {
+  useDocumentTitle("DiasDisponiblesList");
+
   const [dias, setDias] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,7 +39,9 @@ const DiasDisponiblesList: React.FC<Props> = ({ servicioId, onSelectFecha }) => 
       <ul>
         {dias.map((dia, index) => (
           <li key={index}>
-            <button onClick={() => onSelectFecha(dia)}>{new Date(dia).toLocaleDateString()}</button>
+            <button onClick={() => onSelectFecha(dia)}>
+              {new Date(dia).toLocaleDateString()}
+            </button>
           </li>
         ))}
       </ul>

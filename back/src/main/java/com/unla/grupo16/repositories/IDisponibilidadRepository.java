@@ -20,4 +20,6 @@ public interface IDisponibilidadRepository extends JpaRepository<Disponibilidad,
 
     Optional<Disponibilidad> findByDiaSemanaAndHoraInicioAndHoraFin(DayOfWeek diaSemana, LocalTime horaInicio, LocalTime horaFin);
 
+    List<Disponibilidad> findByDiaSemanaAndServiciosId(DayOfWeek diaSemana, Integer servicioId);
+
 }

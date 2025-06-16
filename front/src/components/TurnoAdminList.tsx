@@ -1,11 +1,14 @@
 import React from "react";
 import { TurnoResponseDTO } from "../types/turno";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 interface Props {
   turnos: TurnoResponseDTO[];
 }
 
 const TurnoAdminList: React.FC<Props> = ({ turnos }) => {
+  useDocumentTitle("TurnoAdminList");
+
   if (turnos.length === 0) {
     return <p>No hay turnos disponibles.</p>;
   }
@@ -18,7 +21,7 @@ const TurnoAdminList: React.FC<Props> = ({ turnos }) => {
           borderCollapse: "collapse",
           fontFamily: "Arial, sans-serif",
           fontSize: "14px",
-          minWidth: "700px",
+          minWidth: "900px",
         }}
       >
         <thead>
@@ -28,7 +31,9 @@ const TurnoAdminList: React.FC<Props> = ({ turnos }) => {
             <th style={headerCellStyle}>Ubicación</th>
             <th style={headerCellStyle}>Fecha</th>
             <th style={headerCellStyle}>Hora</th>
-            <th style={headerCellStyle}>Estado</th>
+            <th style={headerCellStyle}>Empleado</th>
+            <th style={headerCellStyle}>Cliente</th>
+            <th style={headerCellStyle}>Observaciones</th>
             <th style={headerCellStyle}>Código Anulación</th>
           </tr>
         </thead>
@@ -42,11 +47,19 @@ const TurnoAdminList: React.FC<Props> = ({ turnos }) => {
               }}
             >
               <td style={bodyCellStyle}>{turno.id}</td>
-              <td style={bodyCellStyle}>{turno.nombreServicio}</td>
+              <td style={bodyCellStyle}>
+                {turno.nombreServicio ?? "Sin servicio"}
+              </td>
               <td style={bodyCellStyle}>{turno.ubicacionDescripcion}</td>
               <td style={bodyCellStyle}>{turno.fecha}</td>
               <td style={bodyCellStyle}>{turno.hora}</td>
-              <td style={bodyCellStyle}>{turno.estado}</td>
+              <td style={bodyCellStyle}>
+                {turno.nombreEmpleado ?? "Sin empleado"}
+              </td>
+              <td style={bodyCellStyle}>
+                {turno.nombreCliente ?? "Sin cliente"}
+              </td>
+              <td style={bodyCellStyle}>{turno.observaciones || "-"}</td>
               <td style={bodyCellStyle}>{turno.codigoAnulacion}</td>
             </tr>
           ))}

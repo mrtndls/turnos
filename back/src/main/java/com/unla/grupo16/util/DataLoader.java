@@ -2,6 +2,8 @@ package com.unla.grupo16.util;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.boot.CommandLineRunner;
@@ -31,14 +33,14 @@ public class DataLoader {
             IUbicacionRepository ubicacionRepo) {
 
         return args -> {
-            // Verificar si ya existe la localidad "LDZ!"
+            // Localidad
             Localidad localidad = localidadRepo.findByNombre("LDZ!").orElseGet(() -> {
                 Localidad newLocalidad = new Localidad();
                 newLocalidad.setNombre("LDZ!");
                 return localidadRepo.save(newLocalidad);
             });
 
-            // Verificar si ya existe la ubicacion "Calle Falsa 1234"
+            // Ubicación
             Ubicacion ubicacion = ubicacionRepo.findByDireccion("Calle Falsa 1234").orElseGet(() -> {
                 Ubicacion newUbicacion = new Ubicacion();
                 newUbicacion.setDireccion("Calle Falsa 1234");
@@ -46,39 +48,63 @@ public class DataLoader {
                 return ubicacionRepo.save(newUbicacion);
             });
 
-            // Verificar si ya existe disponibilidad para viernes 9:00-9:45
-            Disponibilidad dispViernes = disponibilidadRepo.findByDiaSemanaAndHoraInicioAndHoraFin(
-                    DayOfWeek.FRIDAY, LocalTime.of(9, 0), LocalTime.of(9, 45))
-                    .orElseGet(() -> {
-                        Disponibilidad newDisp = Disponibilidad.builder()
-                                .diaSemana(DayOfWeek.FRIDAY)
-                                .horaInicio(LocalTime.of(9, 0))
-                                .horaFin(LocalTime.of(9, 45))
-                                .build();
-                        return disponibilidadRepo.save(newDisp);
-                    });
-
-            // Verificar si ya existe el servicio "VTV"
-            servicioRepo.findByNombre("VTV").orElseGet(() -> {
-                Servicio servicio = Servicio.builder()
+            // Servicio VTV
+            Servicio servicioVTV = servicioRepo.findByNombre("VTV").orElseGet(() -> {
+                Servicio nuevoServicio = Servicio.builder()
                         .nombre("VTV")
-                        .duracion(45)
-                        .disponibilidad(dispViernes)
+                        .duracion(45) // duración típica de servicio
                         .ubicaciones(Set.of(ubicacion))
                         .build();
-
-                dispViernes.getServicios().add(servicio);
-                disponibilidadRepo.save(dispViernes);
-
-                return servicioRepo.save(servicio);
+                return servicioRepo.save(nuevoServicio);
             });
 
-            // Verificar si ya existe empleado con dni "12345678"
-            empleadoRepo.findByDni("12345678").orElseGet(() -> {
+            // Crear disponibilidades para lunes a viernes, de 8:00 a 18:00 en bloques de 45 min (igual que duración servicio)
+            List<DayOfWeek> diasLaborales = List.of(
+                    DayOfWeek.MONDAY,
+                    DayOfWeek.TUESDAY,
+                    DayOfWeek.WEDNESDAY,
+                    DayOfWeek.THURSDAY,
+                    DayOfWeek.FRIDAY
+            );
+
+            for (DayOfWeek dia : diasLaborales) {
+                LocalTime horaInicio = LocalTime.of(8, 0);
+                LocalTime horaFin = LocalTime.of(18, 0);
+                LocalTime hora = horaInicio;
+
+                while (hora.plusMinutes(servicioVTV.getDuracion()).compareTo(horaFin) <= 0) {
+                    LocalTime horaIni = hora;
+                    LocalTime horaFn = hora.plusMinutes(servicioVTV.getDuracion());
+
+                    // Busca disponibilidad fuera del lambda para evitar usar variables mutables dentro
+                    Optional<Disponibilidad> dispOpt = disponibilidadRepo.findByDiaSemanaAndHoraInicioAndHoraFin(
+                            dia, horaIni, horaFn);
+
+                    Disponibilidad disp = dispOpt.orElseGet(() -> {
+                        Disponibilidad nuevaDisp = Disponibilidad.builder()
+                                .diaSemana(dia)
+                                .horaInicio(horaIni)
+                                .horaFin(horaFn)
+                                .build();
+                        return disponibilidadRepo.save(nuevaDisp);
+                    });
+
+                    if (!disp.getServicios().contains(servicioVTV)) {
+                        disp.getServicios().add(servicioVTV);
+                        disponibilidadRepo.save(disp);
+                    }
+
+                    hora = hora.plusMinutes(servicioVTV.getDuracion());
+                }
+            }
+
+            // Empleado 
+            String dni = "123456789";
+            empleadoRepo.findByDni(dni).orElseGet(() -> {
                 Empleado empleado = new Empleado();
-                empleado.setNombre("EmpleadoEjemplo");
-                empleado.setApellido("ApellidoEjemplo");
-                empleado.setDni("12345678");
+                empleado.setNombre("Alberto");
+                empleado.setApellido("Perez");
+                empleado.setDni(dni);
                 empleado.setLegajo("LEG001");
                 return empleadoRepo.save(empleado);
             });
