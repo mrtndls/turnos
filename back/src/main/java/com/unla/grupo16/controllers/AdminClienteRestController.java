@@ -29,7 +29,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Administración de Clientes", description = "Operaciones para la gestión de clientes y turnos (solo ADMIN)")
+@Tag(name = "Administracion de Clientes", description = "Operaciones para la gestion de clientes y turnos (solo ADMIN)")
 @RestController
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('ADMIN')")
@@ -45,7 +45,7 @@ public class AdminClienteRestController {
         this.turnoMapper = turnoMapper;
     }
 
-    @Operation(summary = "Listar turnos no disponibles (reservados, asistidos o cancelados)")
+    @Operation(summary = "Listar turnos no disponibles (reservados)")
     @GetMapping("/turnos")
     public ResponseEntity<List<TurnoResponseDTO>> listarTurnosNoDisponibles() {
         List<Turno> turnos = turnoService.obtenerTurnosNoDisponibles();
@@ -97,7 +97,7 @@ public class AdminClienteRestController {
         }
     }
 
-    @Operation(summary = "Editar información de un cliente")
+    @Operation(summary = "Editar informacion de un cliente")
     @PutMapping("/{clienteId}")
     public ResponseEntity<ClienteAdminDTO> editarCliente(
             @Parameter(description = "ID del cliente") @PathVariable Integer clienteId,

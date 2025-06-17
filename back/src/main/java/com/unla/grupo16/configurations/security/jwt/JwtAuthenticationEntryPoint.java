@@ -28,7 +28,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
                 "timestamp", LocalDateTime.now().toString(),
                 "estado", HttpServletResponse.SC_UNAUTHORIZED,
                 "error", "Unauthorized",
-                "mensaje", "No autorizado o token inválido"
+                "mensaje", "No autorizado o token invalido"
         );
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

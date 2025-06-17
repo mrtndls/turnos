@@ -125,14 +125,14 @@ public class TurnoServiceImpl implements ITurnoService {
 
     private void enviarEmailConfirmacion(String emailCliente, Cliente cliente, Servicio servicio, TurnoRequestDTO dto, Turno turno) throws NegocioException {
         String mensaje = String.format(
-                "Hola %s, su turno para el servicio %s ha sido reservado exitosamente para el %s a las %s. Su código de anulación es: %s.",
+                "Hola %s, su turno para el servicio %s ha sido reservado exitosamente para el %s a las %s. Su codigo de anulacion es: %s.",
                 cliente.getNombre(), servicio.getNombre(), dto.getFecha(), dto.getHora(), turno.getCodigoAnulacion()
         );
 
         try {
-            emailService.sendEmail(emailCliente, "Confirmación de Turno: " + servicio.getNombre(), mensaje);
+            emailService.sendEmail(emailCliente, "Confirmacion de Turno: " + servicio.getNombre(), mensaje);
         } catch (MessagingException e) {
-            throw new NegocioException("Error al enviar email de confirmación: " + e.getMessage());
+            throw new NegocioException("Error al enviar email de confirmacion: " + e.getMessage());
         }
     }
 
@@ -200,7 +200,7 @@ public class TurnoServiceImpl implements ITurnoService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Turno no encontrado."));
 
         if (!turno.getCodigoAnulacion().equalsIgnoreCase(codigoAnulacion)) {
-            throw new NegocioException("Código de anulación incorrecto.");
+            throw new NegocioException("Codigo de anulacion incorrecto.");
         }
         anularTurno(turno);
     }
@@ -208,14 +208,14 @@ public class TurnoServiceImpl implements ITurnoService {
     @Override
     public void cancelarTurnoPorCodigo(String codigoAnulacion) throws NegocioException {
         Turno turno = turnoRepository.findByCodigoAnulacion(codigoAnulacion)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Turno no encontrado con ese código."));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Turno no encontrado con ese codigo."));
 
         anularTurno(turno);
     }
 
     private void anularTurno(Turno turno) throws NegocioException {
         if (turno.isDisponible()) {
-            throw new NegocioException("El turno ya fue anulado o ya está disponible.");
+            throw new NegocioException("El turno ya fue anulado o ya esta disponible.");
         }
 
         turno.setDisponible(true); // Se vuelve a marcar como disponible

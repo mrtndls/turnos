@@ -65,7 +65,7 @@ public class AuthController {
                     .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
 
             if (!user.isEnabled()) {
-                throw new UsuarioDeshabilitadoException("El usuario está deshabilitado");
+                throw new UsuarioDeshabilitadoException("El usuario esta deshabilitado");
             }
 
             String token = jwtUtil.generateToken(authenticatedUser);
@@ -90,7 +90,7 @@ public class AuthController {
             return ResponseEntity.ok(response);
 
         } catch (AuthenticationException ex) {
-            throw new AutenticacionException("Credenciales inválidas");
+            throw new AutenticacionException("Credenciales invalidas");
         }
     }
 }

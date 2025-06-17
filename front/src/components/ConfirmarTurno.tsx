@@ -1,7 +1,7 @@
 import React from "react";
-import { crearTurno } from "../api/clienteApi";
 import { ServicioResponseDTO, UbicacionResponseDTO } from "../types/turno";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import useCrearTurno from "../hooks/useCrearTurno";
 
 interface Props {
   servicio: ServicioResponseDTO;
@@ -12,15 +12,16 @@ interface Props {
   onConfirmar: () => void;
 }
 
-const ConfirmarTurno: React.FC<Props> = ({
+function ConfirmarTurno({
   servicio,
   ubicacion,
   fecha,
   hora,
   onVolver,
   onConfirmar,
-}) => {
+}: Props) {
   useDocumentTitle("ConfirmarTurno");
+  const { crearTurno, loading, error } = useCrearTurno();
 
   const handleConfirmar = async () => {
     try {
@@ -30,12 +31,10 @@ const ConfirmarTurno: React.FC<Props> = ({
         fecha,
         hora,
       });
-
-      alert(`Turno reservado con código: ${turno.codigoAnulacion}`);
-      onConfirmar(); // 🔁 Resetear flujo en DashboardCliente
-    } catch (error) {
-      console.error("Error al reservar turno", error);
-      alert("No se pudo reservar el turno");
+      alert(`Turno reservado con codigo: ${turno.codigoAnulacion}`);
+      onConfirmar();
+    } catch {
+      alert(error || "No se pudo reservar el turno");
     }
   };
 
@@ -43,13 +42,18 @@ const ConfirmarTurno: React.FC<Props> = ({
     <div>
       <h3>Confirmar turno</h3>
       <p>Servicio: {servicio.nombre}</p>
-      <p>Ubicación: {ubicacion.direccion}</p>
+      <p>Ubicacion: {ubicacion.direccion}</p>
       <p>Fecha: {fecha.split("-").reverse().join("/")}</p>
       <p>Hora: {hora}</p>
-      <button onClick={handleConfirmar}>Confirmar</button>
-      <button onClick={onVolver}>Volver</button>
+      <button onClick={handleConfirmar} disabled={loading}>
+        {loading ? "Confirmando..." : "Confirmar"}
+      </button>
+      <button onClick={onVolver} disabled={loading}>
+        Volver
+      </button>
+      {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
-};
+}
 
 export default ConfirmarTurno;

@@ -1,5 +1,4 @@
-// src/components/UbicacionesList.tsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { UbicacionResponseDTO } from "../types/turno";
 import { fetchUbicaciones } from "../api/clienteApi";
 import useDocumentTitle from "../hooks/useDocumentTitle";
@@ -9,38 +8,40 @@ interface Props {
   onSelectUbicacion: (ubicacion: UbicacionResponseDTO) => void;
 }
 
-const UbicacionesList: React.FC<Props> = ({
-  servicioId,
-  onSelectUbicacion,
-}) => {
+const UbicacionesList = ({ servicioId, onSelectUbicacion }: Props) => {
   useDocumentTitle("UbicacionesList");
 
   const [ubicaciones, setUbicaciones] = useState<UbicacionResponseDTO[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadUbicaciones = async () => {
+    const load = async () => {
       try {
         const data = await fetchUbicaciones(servicioId);
         setUbicaciones(data);
-      } catch (error) {
-        console.error("Error cargando ubicaciones", error);
+      } catch (err) {
+        console.error("Error cargando ubicaciones", err);
       } finally {
         setLoading(false);
       }
     };
-    loadUbicaciones();
+    load();
   }, [servicioId]);
 
   if (loading) return <div>Cargando ubicaciones...</div>;
 
   return (
-    <div>
-      <h3>Ubicaciones disponibles</h3>
-      <ul>
+    <div className="p-4 text-center">
+      <h3 className="text-xl font-semibold mb-4">Ubicaciones disponibles</h3>
+      <ul className="space-y-2">
         {ubicaciones.map((u) => (
           <li key={u.id}>
-            <button onClick={() => onSelectUbicacion(u)}>{u.direccion}</button>
+            <button
+              onClick={() => onSelectUbicacion(u)}
+              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+            >
+              {u.direccion}
+            </button>
           </li>
         ))}
       </ul>

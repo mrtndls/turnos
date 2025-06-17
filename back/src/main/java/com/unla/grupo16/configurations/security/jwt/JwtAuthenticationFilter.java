@@ -52,7 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 username = jwtUtil.getUsernameFromToken(jwt);
             } catch (Exception e) {
-                setErrorResponse(response, HttpStatus.UNAUTHORIZED, "Token inválido");
+                setErrorResponse(response, HttpStatus.UNAUTHORIZED, "Token invalido");
                 return;
             }
         }
@@ -78,7 +78,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             } else {
-                setErrorResponse(response, HttpStatus.UNAUTHORIZED, "Token expirado o inválido");
+                setErrorResponse(response, HttpStatus.UNAUTHORIZED, "Token expirado o invalido");
                 return;
             }
         }

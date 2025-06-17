@@ -2,11 +2,11 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import DashboardCliente from "../pages/DashboardCliente";
-import ReservaTurno from "../components/ReservaTurno";
-import MisTurnosList from "../components/MisTurnosList";
-import AnularTurno from "../components/AnularTurno";
-import MenuCliente from "../components/MenuCliente";
+import DashboardCliente from "../../pages/dashboard/ClienteDashboard";
+import ReservaTurno from "../../components/ReservaTurno";
+import MisTurnosList from "../../components/MisTurnosList";
+import AnularTurno from "../../components/AnularTurno";
+import MenuCliente from "../../components/menus/MenuCliente";
 
 const DashboardClienteRoutes: React.FC = () => {
   return (

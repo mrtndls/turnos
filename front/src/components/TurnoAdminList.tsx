@@ -1,14 +1,11 @@
 import React from "react";
 import { TurnoResponseDTO } from "../types/turno";
-import useDocumentTitle from "../hooks/useDocumentTitle";
 
 interface Props {
   turnos: TurnoResponseDTO[];
 }
 
-const TurnoAdminList: React.FC<Props> = ({ turnos }) => {
-  useDocumentTitle("TurnoAdminList");
-
+const TurnoAdminList = ({ turnos }: Props) => {
   if (turnos.length === 0) {
     return <p>No hay turnos disponibles.</p>;
   }

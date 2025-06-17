@@ -94,7 +94,10 @@ public class JwtUtil {
 
     public List<String> getRolesFromToken(String token) {
         Claims claims = getAllClaimsFromToken(token);
-        return claims.get("roles", List.class);
+        List<?> rawRoles = claims.get("roles", List.class);
+        return rawRoles.stream()
+                .map(Object::toString)
+                .collect(Collectors.toList());
     }
 
 }

@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosInstance, AxiosResponse } from "axios";
 import {
   ServicioResponseDTO,
   UbicacionResponseDTO,
@@ -15,20 +15,25 @@ export interface TurnoPreviewDTO {
 
 const API_BASE_CLIENTE = "http://localhost:8080/api/cliente";
 
-const axiosInstanceCliente = axios.create({
+const axiosInstanceCliente: AxiosInstance = axios.create({
   baseURL: API_BASE_CLIENTE,
   timeout: 5000,
 });
 
-axiosInstanceCliente.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers = config.headers || {};
-    config.headers["Authorization"] = `Bearer ${token}`;
-  }
-  return config;
-}, (error) => Promise.reject(error));
+// Interceptor para agregar token a headers
+axiosInstanceCliente.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
+// Interceptor para manejar 401 globalmente
 axiosInstanceCliente.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -40,68 +45,57 @@ axiosInstanceCliente.interceptors.response.use(
   }
 );
 
-// Métodos cliente
+// para extraer data y manejar errores
+async function extractData<T>(promise: Promise<AxiosResponse<T>>): Promise<T> {
+  try {
+    const response = await promise;
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
 
-export const anularTurno = async (codigoAnulacion: string): Promise<string> => {
-  const { data } = await axiosInstanceCliente.post("/anular", null, {
-    params: { codigoAnulacion },
-  });
-  return data.mensaje;
-};
+// metodos cliente
+export const anularTurno = (codigoAnulacion: string): Promise<string> =>
+  extractData(
+    axiosInstanceCliente.post("/anular", null, { params: { codigoAnulacion } })
+  ).then((data) => data.mensaje);
 
-export const confirmarDatosTurno = async (
+export const confirmarDatosTurno = (
   turno: TurnoPreviewDTO
-): Promise<any> => {
-  const { data } = await axiosInstanceCliente.post("/confirmar", turno);
-  return data;
-};
+): Promise<TurnoResponseDTO> =>
+  extractData(axiosInstanceCliente.post("/confirmar", turno));
 
-export const fetchMisTurnos = async (): Promise<TurnoResponseDTO[]> => {
-  const { data } = await axiosInstanceCliente.get("/mis-turnos");
-  return data;
-};
+export const fetchMisTurnos = (): Promise<TurnoResponseDTO[]> =>
+  extractData(axiosInstanceCliente.get("/mis-turnos"));
 
-export const fetchServicios = async (): Promise<ServicioResponseDTO[]> => {
-  const { data } = await axiosInstanceCliente.get("/servicios");
-  return data;
-};
+export const fetchServicios = (): Promise<ServicioResponseDTO[]> =>
+  extractData(axiosInstanceCliente.get("/servicios"));
 
-export const fetchUbicaciones = async (
-  servicioId: number
-): Promise<UbicacionResponseDTO[]> => {
-  const { data } = await axiosInstanceCliente.get(`/servicios/${servicioId}/ubicaciones`);
-  return data;
-};
+export const fetchUbicaciones = (servicioId: number): Promise<UbicacionResponseDTO[]> =>
+  extractData(axiosInstanceCliente.get(`/servicios/${servicioId}/ubicaciones`));
 
-export const fetchDiasDisponibles = async (
-  servicioId: number
-): Promise<string[]> => {
-  const { data } = await axiosInstanceCliente.get(`/servicios/${servicioId}/dias-disponibles`);
-  return data;
-};
+export const fetchDiasDisponibles = (servicioId: number): Promise<string[]> =>
+  extractData(axiosInstanceCliente.get(`/servicios/${servicioId}/dias-disponibles`));
 
-export const fetchHorariosDisponibles = async (
+export const fetchHorariosDisponibles = (
   servicioId: number,
   fecha: string
-): Promise<string[]> => {
-  const { data } = await axiosInstanceCliente.get(`/servicios/${servicioId}/fechas/${fecha}/horarios`);
-  return data;
-};
+): Promise<string[]> =>
+  extractData(
+    axiosInstanceCliente.get(`/servicios/${servicioId}/fechas/${fecha}/horarios`)
+  );
 
-export const fetchFechasHabilitadas = async (
+export const fetchFechasHabilitadas = (
   servicioId: number,
   year: number,
   month: number
-): Promise<string[]> => {
-  const { data } = await axiosInstanceCliente.get(`/servicios/${servicioId}/fechas-habilitadas`, {
-    params: { year, month },
-  });
-  return data;
-};
+): Promise<string[]> =>
+  extractData(
+    axiosInstanceCliente.get(`/servicios/${servicioId}/fechas-habilitadas`, {
+      params: { year, month },
+    })
+  );
 
-export const crearTurno = async (
-  turno: TurnoRequestDTO
-): Promise<TurnoResponseDTO> => {
-  const { data } = await axiosInstanceCliente.post("", turno);
-  return data;
-};
+export const crearTurno = (turno: TurnoRequestDTO): Promise<TurnoResponseDTO> =>
+  extractData(axiosInstanceCliente.post("", turno));

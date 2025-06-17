@@ -1,4 +1,4 @@
-// components/MisTurnosList.tsx
+// src/components/MisTurnosList.tsx
 import React, { useEffect, useState } from "react";
 import { fetchMisTurnos } from "../api/clienteApi";
 import { TurnoResponseDTO } from "../types/turno";

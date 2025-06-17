@@ -1,4 +1,3 @@
-// src/components/ClienteAdminList.tsx
 import React from "react";
 import { ClienteAdminDTO } from "../types/cliente";
 import useDocumentTitle from "../hooks/useDocumentTitle";
@@ -11,14 +10,14 @@ interface Props {
   onEditar: (cliente: ClienteAdminDTO) => void;
 }
 
-const ClienteAdminList: React.FC<Props> = ({
+const ClienteAdminList = ({
   activos,
   dadosDeBaja,
   onDarDeBaja,
   onDarDeAlta,
   onEditar,
-}) => {
-  useDocumentTitle("ClienteAdminList");
+}: Props) => {
+  useDocumentTitle("Clientes | Administración");
 
   const renderTabla = (clientes: ClienteAdminDTO[], esActivo: boolean) => (
     <table
@@ -33,13 +32,13 @@ const ClienteAdminList: React.FC<Props> = ({
         <tr style={{ backgroundColor: "#f3f4f6", textAlign: "center" }}>
           <th style={headerCellStyle}>ID</th>
           <th style={headerCellStyle}>Email</th>
-          <th style={headerCellStyle}>Baja Logica</th>
+          <th style={headerCellStyle}>Baja Lógica</th>
           <th style={headerCellStyle}>Turno Activo</th>
-          <th style={headerCellStyle}>CreatedAt</th>
-          <th style={headerCellStyle}>UpdatedAt</th>
+          <th style={headerCellStyle}>Creado</th>
+          <th style={headerCellStyle}>Actualizado</th>
           <th style={headerCellStyle}>Nombre</th>
           <th style={headerCellStyle}>Apellido</th>
-          <th style={headerCellStyle}>Dni</th>
+          <th style={headerCellStyle}>DNI</th>
           <th style={headerCellStyle}>Acciones</th>
         </tr>
       </thead>
@@ -51,7 +50,7 @@ const ClienteAdminList: React.FC<Props> = ({
           >
             <td style={bodyCellStyle}>{cliente.id}</td>
             <td style={bodyCellStyle}>{cliente.email}</td>
-            <td style={bodyCellStyle}>{cliente.clienteActivo ? "No" : "Si"}</td>
+            <td style={bodyCellStyle}>{cliente.clienteActivo ? "No" : "Sí"}</td>
             <td style={bodyCellStyle}>
               {cliente.tieneTurnosActivos ? "Sí" : "No"}
             </td>

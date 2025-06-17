@@ -1,45 +1,43 @@
 import React, { useState } from "react";
-import { anularTurno } from "../api/clienteApi";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import useAnularTurno from "../hooks/useAnularTurno";
 
 export default function AnularTurno() {
-  useDocumentTitle("AnularTurno");
+  useDocumentTitle("Anular Turno");
 
   const [codigo, setCodigo] = useState("");
-  const [mensaje, setMensaje] = useState("");
-  const [error, setError] = useState("");
+  const { mensaje, error, loading, anular } = useAnularTurno();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMensaje("");
-    setError("");
-
-    try {
-      await anularTurno(codigo);
-      setMensaje("Turno anulado con éxito.");
-      setCodigo("");
-    } catch (err: any) {
-      setError(err.message || "Error al anular turno");
-    }
+    await anular(codigo);
+    if (!error) setCodigo("");
   };
 
   return (
     <div>
       <h2>Anular turno</h2>
       <form onSubmit={handleSubmit}>
-        <label>
-          Código de anulación:
-          <input
-            type="text"
-            value={codigo}
-            onChange={(e) => setCodigo(e.target.value)}
-            required
-          />
-        </label>
-        <button type="submit">Anular</button>
+        <label htmlFor="codigo">Codigo de anulacion:</label>
+        <input
+          id="codigo"
+          type="text"
+          value={codigo}
+          onChange={(e) => setCodigo(e.target.value)}
+          required
+          disabled={loading}
+          className="border p-1 ml-2"
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          className="ml-2 px-3 py-1 bg-blue-600 text-white rounded"
+        >
+          {loading ? "Anulando..." : "Anular"}
+        </button>
       </form>
-      {mensaje && <p className="text-green-600">{mensaje}</p>}
-      {error && <p className="text-red-600">{error}</p>}
+      {mensaje && <p className="text-green-600 mt-2">{mensaje}</p>}
+      {error && <p className="text-red-600 mt-2">{error}</p>}
     </div>
   );
 }

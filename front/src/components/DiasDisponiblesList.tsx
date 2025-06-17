@@ -1,44 +1,27 @@
-// src/components/DiasDisponiblesList.tsx
-import React, { useEffect, useState } from "react";
-import { fetchDiasDisponibles } from "../api/clienteApi";
+import React from "react";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import useDiasDisponibles from "../hooks/useDiasDisponibles";
 
 interface Props {
   servicioId: number;
   onSelectFecha: (fecha: string) => void;
 }
 
-const DiasDisponiblesList: React.FC<Props> = ({
-  servicioId,
-  onSelectFecha,
-}) => {
+function DiasDisponiblesList({ servicioId, onSelectFecha }: Props) {
   useDocumentTitle("DiasDisponiblesList");
 
-  const [dias, setDias] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { dias, loading, error } = useDiasDisponibles(servicioId);
 
-  useEffect(() => {
-    const loadDias = async () => {
-      try {
-        const data = await fetchDiasDisponibles(servicioId);
-        setDias(data);
-      } catch (error) {
-        console.error("Error cargando días disponibles", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadDias();
-  }, [servicioId]);
-
-  if (loading) return <div>Cargando días disponibles...</div>;
+  if (loading) return <div>Cargando dias disponibles...</div>;
+  if (error) return <div style={{ color: "red" }}>{error}</div>;
+  if (dias.length === 0) return <div>No hay dias disponibles.</div>;
 
   return (
     <div>
       <h3>Fechas disponibles</h3>
       <ul>
-        {dias.map((dia, index) => (
-          <li key={index}>
+        {dias.map((dia) => (
+          <li key={dia}>
             <button onClick={() => onSelectFecha(dia)}>
               {new Date(dia).toLocaleDateString()}
             </button>
@@ -47,6 +30,6 @@ const DiasDisponiblesList: React.FC<Props> = ({
       </ul>
     </div>
   );
-};
+}
 
 export default DiasDisponiblesList;

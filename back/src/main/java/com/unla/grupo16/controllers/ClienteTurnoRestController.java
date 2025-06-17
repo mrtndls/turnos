@@ -87,7 +87,7 @@ public class ClienteTurnoRestController {
         return ResponseEntity.ok(ubicacionMapper.toDTOList(servicio.getUbicaciones()));
     }
 
-    @Operation(summary = "Obtener los días disponibles para un servicio")
+    @Operation(summary = "Obtener los dias disponibles para un servicio")
     @GetMapping("/servicios/{servicioId}/dias-disponibles")
     public ResponseEntity<List<LocalDate>> diasDisponibles(
             @Parameter(description = "ID del servicio") @PathVariable Integer servicioId) {
@@ -141,13 +141,13 @@ public class ClienteTurnoRestController {
         }
     }
 
-    @Operation(summary = "Anular un turno utilizando el código de anulación")
+    @Operation(summary = "Anular un turno utilizando el codigo de anulacion")
     @PostMapping("/anular")
     public ResponseEntity<Map<String, String>> anularTurno(
-            @Parameter(description = "Código de anulación enviado por email") @RequestParam String codigoAnulacion) {
+            @Parameter(description = "Codigo de anulacion enviado por email") @RequestParam String codigoAnulacion) {
         try {
             turnoService.cancelarTurnoPorCodigo(codigoAnulacion);
-            return ResponseEntity.ok(Map.of("mensaje", "Turno anulado con éxito"));
+            return ResponseEntity.ok(Map.of("mensaje", "Turno anulado con exito"));
         } catch (NegocioException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
@@ -169,7 +169,7 @@ public class ClienteTurnoRestController {
         return ResponseEntity.ok(dto);
     }
 
-    @Operation(summary = "Obtener fechas habilitadas de un servicio en un mes específico")
+    @Operation(summary = "Obtener fechas habilitadas de un servicio en un mes especifico")
     @GetMapping("/servicios/{servicioId}/fechas-habilitadas")
     public ResponseEntity<List<String>> obtenerFechasHabilitadas(
             @PathVariable Integer servicioId,
