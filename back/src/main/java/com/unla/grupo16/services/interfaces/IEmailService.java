@@ -1,8 +1,10 @@
 package com.unla.grupo16.services.interfaces;
 
+import com.unla.grupo16.models.entities.Turno;
+
 import jakarta.mail.MessagingException;
 
 public interface IEmailService {
 
-    public void sendEmail(String to, String subject, String body) throws MessagingException;
+    public void sendEmail(String para, Turno turno) throws MessagingException;
 }

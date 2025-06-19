@@ -29,8 +29,6 @@ public class Turno {
 
     private LocalDateTime fechaHora;
 
-    private String observaciones;
-
     private String codigoAnulacion;
 
     private boolean disponible;

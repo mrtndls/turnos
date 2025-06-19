@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 @OpenAPIDefinition(
         info = @Info(
                 title = "API Sistema de Turnos",
-                version = "1.0",
+                version = "1.6",
                 description = "Documentacion de la API para clientes y administradores"
         ),
         security = @SecurityRequirement(name = "bearerAuth") // Habilita JWT por defecto

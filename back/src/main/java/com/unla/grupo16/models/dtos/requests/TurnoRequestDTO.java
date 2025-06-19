@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,9 +17,6 @@ import lombok.ToString;
 @ToString
 public class TurnoRequestDTO {
 
-    //@NotNull(message = "El ID del cliente es obligatorio")
-    private Integer idCliente;
-
     @NotNull(message = "El ID del servicio es obligatorio")
     private Integer idServicio;
 
@@ -33,6 +29,4 @@ public class TurnoRequestDTO {
     @NotNull(message = "La hora es obligatoria")
     private LocalTime hora;
 
-    @Size(max = 500, message = "Las observaciones no deben exceder los 500 caracteres")
-    private String observaciones;
 }

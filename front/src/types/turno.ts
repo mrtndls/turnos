@@ -30,7 +30,6 @@ export interface TurnoRequestDTO {
   idUbicacion: number;
   fecha: string;             // formato ISO "YYYY-MM-DD"
   hora: string;              // ejemplo "09:00"
-  observaciones?: string;    // opcional
 }
 
 
@@ -42,6 +41,5 @@ export interface TurnoResponseDTO {
   ubicacionDescripcion: string;
   nombreEmpleado: string | null; // puede ser null o "A confirmar"
   nombreCliente: string | null;
-  observaciones?: string;
   codigoAnulacion: string;
 }

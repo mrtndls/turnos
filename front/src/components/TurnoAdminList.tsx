@@ -30,7 +30,6 @@ const TurnoAdminList = ({ turnos }: Props) => {
             <th style={headerCellStyle}>Hora</th>
             <th style={headerCellStyle}>Empleado</th>
             <th style={headerCellStyle}>Cliente</th>
-            <th style={headerCellStyle}>Observaciones</th>
             <th style={headerCellStyle}>Código Anulación</th>
           </tr>
         </thead>
@@ -56,7 +55,6 @@ const TurnoAdminList = ({ turnos }: Props) => {
               <td style={bodyCellStyle}>
                 {turno.nombreCliente ?? "Sin cliente"}
               </td>
-              <td style={bodyCellStyle}>{turno.observaciones || "-"}</td>
               <td style={bodyCellStyle}>{turno.codigoAnulacion}</td>
             </tr>
           ))}

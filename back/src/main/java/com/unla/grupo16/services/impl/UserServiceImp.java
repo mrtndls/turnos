@@ -4,15 +4,15 @@ import java.util.stream.Collectors;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.unla.grupo16.repositories.IUserRepository;
+import com.unla.grupo16.services.interfaces.IUserService;
 
 @Service("userService")
-public class UserServiceImp implements UserDetailsService {
+public class UserServiceImp implements IUserService {
 
     private final IUserRepository userRepository;
 

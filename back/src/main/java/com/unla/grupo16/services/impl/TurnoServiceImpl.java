@@ -25,7 +25,6 @@ import com.unla.grupo16.models.entities.Disponibilidad;
 import com.unla.grupo16.models.entities.Empleado;
 import com.unla.grupo16.models.entities.Servicio;
 import com.unla.grupo16.models.entities.Turno;
-import com.unla.grupo16.models.entities.UserEntity;
 import com.unla.grupo16.repositories.IClienteRepository;
 import com.unla.grupo16.repositories.IDisponibilidadRepository;
 import com.unla.grupo16.repositories.IEmpleadoRepository;
@@ -65,48 +64,39 @@ public class TurnoServiceImpl implements ITurnoService {
     }
 
     @Override
-    public TurnoResponseDTO crearTurno(TurnoRequestDTO dto, String username) throws NegocioException {
+    public TurnoResponseDTO crearTurno(TurnoRequestDTO dto, Cliente cliente, String username) throws NegocioException {
         validarTurnoRequest(dto);
-
-        // Obtener usuario autenticado
-        UserEntity user = usuarioRepository.findByEmailWithPersona(username)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
-
-        if (!(user.getPersona() instanceof Cliente)) {
-            throw new NegocioException("Solo los clientes pueden reservar turnos.");
-        }
-
-        Cliente cliente = (Cliente) user.getPersona();
 
         Servicio servicio = servicioRepository.findById(dto.getIdServicio())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Servicio no encontrado"));
 
         LocalDateTime fechaHora = LocalDateTime.of(dto.getFecha(), dto.getHora());
 
-        // para solo comparar hasta minutos
+        // Validación: no permitir turnos en el pasado
         LocalDateTime ahora = LocalDateTime.now().withSecond(0).withNano(0);
         if (fechaHora.isBefore(ahora)) {
             throw new NegocioException("No se pueden reservar turnos en fechas u horarios pasados.");
         }
 
+        // Buscar un empleado disponible
         Empleado empleadoAsignado = empleadoRepository.findAll().stream()
                 .filter(emp -> !turnoRepository.existsByEmpleadoAndFechaHoraAndDisponibleFalse(emp, fechaHora))
                 .findFirst()
                 .orElseThrow(() -> new DisponibilidadNoEncontradaException("No hay empleados disponibles para la fecha y hora"));
 
+        // Crear y persistir el turno
         Turno turno = turnoMapper.toEntity(dto);
         turno.setCliente(cliente);
         turno.setEmpleado(empleadoAsignado);
         turno.setServicio(servicio);
         turno.setFechaHora(fechaHora);
-        //turno.setEstado("RESERVADO");
         turno.setDisponible(false);
-        turno.setObservaciones(dto.getObservaciones());
         turno.setCodigoAnulacion(UUID.randomUUID().toString().substring(0, 8).toUpperCase());
 
         turnoRepository.save(turno);
 
-        enviarEmailConfirmacion(user.getEmail(), cliente, servicio, dto, turno);
+        // Enviar correo de confirmacion
+        enviarEmailConfirmacion(username, turno);
 
         return turnoMapper.toDTO(turno);
     }
@@ -123,16 +113,11 @@ public class TurnoServiceImpl implements ITurnoService {
         }
     }
 
-    private void enviarEmailConfirmacion(String emailCliente, Cliente cliente, Servicio servicio, TurnoRequestDTO dto, Turno turno) throws NegocioException {
-        String mensaje = String.format(
-                "Hola %s, su turno para el servicio %s ha sido reservado exitosamente para el %s a las %s. Su codigo de anulacion es: %s.",
-                cliente.getNombre(), servicio.getNombre(), dto.getFecha(), dto.getHora(), turno.getCodigoAnulacion()
-        );
-
+    private void enviarEmailConfirmacion(String emailCliente, Turno turno) throws NegocioException {
         try {
-            emailService.sendEmail(emailCliente, "Confirmacion de Turno: " + servicio.getNombre(), mensaje);
+            emailService.sendEmail(emailCliente, turno); // ahora toda la lógica y armado de template está del lado del service
         } catch (MessagingException e) {
-            throw new NegocioException("Error al enviar email de confirmacion: " + e.getMessage());
+            throw new NegocioException("Error al enviar email de confirmación: " + e.getMessage());
         }
     }
 
@@ -192,17 +177,6 @@ public class TurnoServiceImpl implements ITurnoService {
         return turnoRepository.findAll().stream()
                 .map(turnoMapper::toDTO)
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public void cancelarTurno(Integer turnoId, String codigoAnulacion) throws NegocioException {
-        Turno turno = turnoRepository.findById(turnoId)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Turno no encontrado."));
-
-        if (!turno.getCodigoAnulacion().equalsIgnoreCase(codigoAnulacion)) {
-            throw new NegocioException("Codigo de anulacion incorrecto.");
-        }
-        anularTurno(turno);
     }
 
     @Override

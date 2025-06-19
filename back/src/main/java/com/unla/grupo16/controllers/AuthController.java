@@ -43,8 +43,8 @@ public class AuthController {
 
     @Operation(summary = "Autenticar usuario y generar JWT")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Autenticación exitosa"),
-        @ApiResponse(responseCode = "401", description = "Credenciales inválidas"),
+        @ApiResponse(responseCode = "200", description = "Autenticacion exitosa"),
+        @ApiResponse(responseCode = "401", description = "Credenciales invalidas"),
         @ApiResponse(responseCode = "403", description = "Usuario deshabilitado"),
         @ApiResponse(responseCode = "404", description = "Usuario no encontrado"),
         @ApiResponse(responseCode = "500", description = "Error inesperado")

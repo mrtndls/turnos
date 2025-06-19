@@ -21,6 +21,5 @@ public class TurnoResponseDTO {
     private String nombreEmpleado;    // puede ser null o "A confirmar"
     private String nombreCliente;
 
-    private String observaciones;     // opcional
     private String codigoAnulacion;   // importante para anulación
 }

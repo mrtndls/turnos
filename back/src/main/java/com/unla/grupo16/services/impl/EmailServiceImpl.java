@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import com.unla.grupo16.models.entities.Turno;
 import com.unla.grupo16.services.interfaces.IEmailService;
 
 import jakarta.mail.MessagingException;
@@ -23,21 +24,22 @@ public class EmailServiceImpl implements IEmailService {
     }
 
     @Override
-    public void sendEmail(String to, String subject, String body) throws MessagingException {
+    public void sendEmail(String para, Turno turno) throws MessagingException {
 
         Context context = new Context();
-        context.setVariable("titulo", subject);
-        context.setVariable("mensaje", body);
+        context.setVariable("cliente", turno.getCliente());
+        context.setVariable("servicio", turno.getServicio());
+        context.setVariable("turno", turno);
 
         String htmlContent = templateEngine.process("email/email-template.html", context);
 
-        MimeMessage message = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+        MimeMessage mensaje = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mensaje, true);
 
-        helper.setTo(to); 
-        helper.setSubject(subject);
-        helper.setText(htmlContent, true); 
+        helper.setTo(para);
+        helper.setSubject("Confirmacion de turno - " + turno.getServicio().getNombre());
+        helper.setText(htmlContent, true);
 
-        javaMailSender.send(message);
+        javaMailSender.send(mensaje);
     }
 }

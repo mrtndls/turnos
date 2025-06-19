@@ -132,10 +132,9 @@ public class ClienteTurnoRestController {
     @PostMapping
     public ResponseEntity<TurnoResponseDTO> crearTurno(@RequestBody TurnoRequestDTO dto, Principal principal) {
         Cliente cliente = getClienteAutenticado(principal);
-        dto.setIdCliente(cliente.getId());
 
         try {
-            return ResponseEntity.ok(turnoService.crearTurno(dto, principal.getName()));
+            return ResponseEntity.ok(turnoService.crearTurno(dto, cliente, principal.getName()));
         } catch (NegocioException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
         }
@@ -186,7 +185,7 @@ public class ClienteTurnoRestController {
 
     // Interno
     private Cliente getClienteAutenticado(Principal principal) {
-        return userRepo.findByEmailConPersona(principal.getName())
+        return userRepo.findByEmailOnlyIfHasPersona(principal.getName())
                 .map(user -> Hibernate.unproxy(user.getPersona()))
                 .filter(Cliente.class::isInstance)
                 .map(Cliente.class::cast)

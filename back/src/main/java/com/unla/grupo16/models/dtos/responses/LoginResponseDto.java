@@ -4,7 +4,7 @@ package com.unla.grupo16.models.dtos.responses;
 public record LoginResponseDto(
         String token,
         String email,
-        String rol,
+        String rol, // List<String> si un usuario puede tener mas de 1 rol
         Integer id,
         String nombreCompleto) {
 

@@ -14,13 +14,13 @@ import com.unla.grupo16.models.entities.UserEntity;
 @Repository
 public interface IUserRepository extends JpaRepository<UserEntity, Integer> {
 
-    Optional<UserEntity> findByEmail(String email);
-
-    @Query("select u from UserEntity u join fetch u.persona where u.email = :email")
-    Optional<UserEntity> findByEmailConPersona(@Param("email") String email);
-
+    // LEFT JOIN FETCH: retorna usuarios aunque no tenga una persona asociada
     @Query("SELECT u FROM UserEntity u LEFT JOIN FETCH u.persona WHERE u.email = :email")
     Optional<UserEntity> findByEmailWithPersona(@Param("email") String email);
+
+    // JOIN FETCH (inner join) solo devuelve usuario si estan asociados a una persona
+    @Query("select u from UserEntity u join fetch u.persona where u.email = :email")
+    Optional<UserEntity> findByEmailOnlyIfHasPersona(@Param("email") String email);
 
     Optional<UserEntity> findByPersona(Cliente cliente);
 

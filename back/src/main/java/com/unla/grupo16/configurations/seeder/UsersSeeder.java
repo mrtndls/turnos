@@ -93,5 +93,5 @@ public class UsersSeeder implements CommandLineRunner {
                 .type(roleType)
                 .build();
     }
-    
+
 }

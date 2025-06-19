@@ -56,7 +56,6 @@ public class TurnoMapper {
         dto.setUbicacionDescripcion(ubicacionDescripcion);
 
         // otros campos
-        dto.setObservaciones(turno.getObservaciones());
         dto.setCodigoAnulacion(turno.getCodigoAnulacion());
 
         return dto;
@@ -65,7 +64,6 @@ public class TurnoMapper {
     public Turno toEntity(TurnoRequestDTO dto) {
         Turno turno = new Turno();
         turno.setFechaHora(LocalDateTime.of(dto.getFecha(), dto.getHora()));
-        turno.setObservaciones(dto.getObservaciones());
         turno.setDisponible(false); // reservado por defecto
         return turno;
     }

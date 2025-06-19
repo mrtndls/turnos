@@ -14,4 +14,5 @@ public interface IClienteService {
     void darDeAltaCliente(Integer clienteId) throws RecursoNoEncontradoException;
 
     ClienteAdminDTO editarCliente(Integer clienteId, ClienteAdminDTO clienteDto) throws RecursoNoEncontradoException;
+
 }

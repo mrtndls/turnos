@@ -14,6 +14,7 @@ const saveUserToLocalStorage = (user: User) => {
   localStorage.setItem("rol", user.rol);
 };
 
+// limpiar almacenamiento local
 const clearUserFromLocalStorage = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("email");
