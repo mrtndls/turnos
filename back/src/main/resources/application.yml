@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/turnos?useSSL=false&serverTimezone=UTC
     username: root
-    password: root
+    password: password
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -17,5 +17,5 @@ jwt:
   claveSecreta: hg76Kjsh983hfd!GJgPskdfnQW3498hgf4JHGFh9asdFNLkHWe98hWEkjsdfhJGH8
   tiempoExpiracion: 86400000 # 24 horas en milisegundos
 
-MAIL_USERNAME: martinabeldialessio@gmail.com
-MAIL_PASSWORD: bmqjzqcifpjvrtsw
+MAIL_USERNAME: email@gmail.com
+MAIL_PASSWORD: codigo
