@@ -1,7 +1,7 @@
 
 
-// AuthService: se encarga de la comunicación con el backend para autenticación
-// Es la capa que hace peticiones al servidor y maneja sesión del lado del cliente
+// AuthService: se encarga de la comunicacion con el back para auth
+// Es la capa que hace peticiones al servidor y maneja seson del lado del cliente
 
 import axios from "axios";
 import { Usuario } from "../types/Usuario";
