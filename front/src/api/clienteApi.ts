@@ -1,4 +1,4 @@
-// src/api/ClienteService.ts
+
 
 // este servicio maneja las llamadas HTTP del cliente autenticado al back
 // utiliza una instancia de Axios con token incluido automaticamente
