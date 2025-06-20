@@ -1,4 +1,4 @@
-// src/api/AuthService.ts
+
 
 // AuthService: se encarga de la comunicación con el backend para autenticación
 // Es la capa que hace peticiones al servidor y maneja sesión del lado del cliente
