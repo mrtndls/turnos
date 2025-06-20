@@ -7,7 +7,9 @@ import com.unla.grupo16.models.dtos.responses.ClientesAdminResponseDTO;
 
 public interface IClienteService {
 
-    ClientesAdminResponseDTO obtenerClientesActivosYBajaLogica();
+    // OK
+    // ADMIN
+    ClientesAdminResponseDTO traerClientesActivosYBajaLogica();
 
     void darDeBajaCliente(Integer clienteId) throws NegocioException, RecursoNoEncontradoException;
 

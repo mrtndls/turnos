@@ -29,8 +29,10 @@ public class ClienteServiceImpl implements IClienteService {
         this.clienteMapper = clienteMapper;
     }
 
+    // OK
+    // ADMIN
     @Override
-    public ClientesAdminResponseDTO obtenerClientesActivosYBajaLogica() {
+    public ClientesAdminResponseDTO traerClientesActivosYBajaLogica() {
         List<UserEntity> usuarios = userRepository.findAllClientesConUsuarioIncluyendoBaja();
 
         List<ClienteAdminDTO> activos = usuarios.stream()
@@ -43,10 +45,10 @@ public class ClienteServiceImpl implements IClienteService {
                 .map(clienteMapper::toDTO)
                 .collect(Collectors.toList());
 
-        return ClientesAdminResponseDTO.builder()
-                .clientesActivos(activos)
-                .clientesBajaLogica(bajaLogica)
-                .build();
+        return new ClientesAdminResponseDTO(
+                activos,
+                bajaLogica
+        );
     }
 
     @Override
@@ -85,14 +87,14 @@ public class ClienteServiceImpl implements IClienteService {
         Cliente cliente = clienteRepository.findById(clienteId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Cliente no encontrado"));
 
-        cliente.setNombre(clienteDto.getNombre());
-        cliente.setApellido(clienteDto.getApellido());
-        cliente.setDni(clienteDto.getDni());
+        cliente.setNombre(clienteDto.nombre());
+        cliente.setApellido(clienteDto.apellido());
+        cliente.setDni(clienteDto.dni());
 
         UserEntity user = userRepository.findByPersona(cliente)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario asociado al cliente no encontrado"));
 
-        user.setEmail(clienteDto.getEmail());
+        user.setEmail(clienteDto.email());
 
         clienteRepository.save(cliente);
         userRepository.save(user);

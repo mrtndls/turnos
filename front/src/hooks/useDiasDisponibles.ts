@@ -1,23 +1,24 @@
 import { useState, useEffect } from "react";
-import { fetchDiasDisponibles } from "../api/clienteApi";
+import { traerDiasDisponibles } from "../api/clienteApi";
 
+// hook para traer los dias disp de un servicio
 export default function useDiasDisponibles(servicioId: number) {
   const [dias, setDias] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setLoading(true);
+    setCargando(true);
     setError(null);
 
     const loadDias = async () => {
       try {
-        const data = await fetchDiasDisponibles(servicioId);
+        const data = await traerDiasDisponibles(servicioId);
         setDias(data);
       } catch (err: any) {
-        setError(err.message || "Error cargando dias disponibles");
+        setError(err.message || "Error al cargar los dias disponibles");
       } finally {
-        setLoading(false);
+        setCargando(false);
       }
     };
 
@@ -25,9 +26,9 @@ export default function useDiasDisponibles(servicioId: number) {
       loadDias();
     } else {
       setDias([]);
-      setLoading(false);
+      setCargando(false);
     }
   }, [servicioId]);
 
-  return { dias, loading, error };
+  return { dias, cargando, error };
 }

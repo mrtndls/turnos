@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 
 interface MenuOption {
@@ -12,6 +11,7 @@ interface MenuBaseProps {
   options: MenuOption[];
 }
 
+// componente base para mostrar opciones de menu
 function MenuBase({ title, options }: MenuBaseProps) {
   const navigate = useNavigate();
 
@@ -23,7 +23,7 @@ function MenuBase({ title, options }: MenuBaseProps) {
           <button
             key={path}
             onClick={() => navigate(path)}
-            className={`w-full ${colorClass} text-white py-2 rounded hover:brightness-110 transition`}
+            className={`w-full ${colorClass} text-white py-2 rounded transition`}
           >
             {label}
           </button>

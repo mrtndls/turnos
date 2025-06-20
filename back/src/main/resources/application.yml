@@ -14,8 +14,8 @@ spring:
         format_sql: true
 
 jwt:
-  secret: hg76Kjsh983hfd!GJgPskdfnQW3498hgf4JHGFh9asdFNLkHWe98hWEkjsdfhJGH8
-  expiration: 86400000 # 24 horas en milisegundos
+  claveSecreta: hg76Kjsh983hfd!GJgPskdfnQW3498hgf4JHGFh9asdFNLkHWe98hWEkjsdfhJGH8
+  tiempoExpiracion: 86400000 # 24 horas en milisegundos
 
 MAIL_USERNAME: martinabeldialessio@gmail.com
 MAIL_PASSWORD: bmqjzqcifpjvrtsw

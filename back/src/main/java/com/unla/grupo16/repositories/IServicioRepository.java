@@ -10,5 +10,6 @@ import com.unla.grupo16.models.entities.Servicio;
 @Repository
 public interface IServicioRepository extends JpaRepository<Servicio, Integer> {
 
+    // DATALOADER
     Optional<Servicio> findByNombre(String nombre);
 }

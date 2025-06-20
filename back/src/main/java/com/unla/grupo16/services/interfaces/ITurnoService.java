@@ -6,6 +6,7 @@ import java.util.List;
 import com.unla.grupo16.exception.NegocioException;
 import com.unla.grupo16.models.dtos.requests.TurnoRequestDTO;
 import com.unla.grupo16.models.dtos.responses.DisponibilidadResponseDTO;
+import com.unla.grupo16.models.dtos.responses.TurnoPreviewResponseDTO;
 import com.unla.grupo16.models.dtos.responses.TurnoResponseDTO;
 import com.unla.grupo16.models.entities.Cliente;
 import com.unla.grupo16.models.entities.Servicio;
@@ -13,26 +14,24 @@ import com.unla.grupo16.models.entities.Turno;
 
 public interface ITurnoService {
 
+    //////// ok
+    
+    List<LocalDate> traerDiasDisponiblesParaServicio(Servicio servicio);
+
+    List<String> traerHorariosDisponiblesParaServicio(Integer servicioId, LocalDate fecha);
+
+    TurnoPreviewResponseDTO generarPreview(TurnoRequestDTO dto);
+
     TurnoResponseDTO crearTurno(TurnoRequestDTO dto, Cliente cliente, String username) throws NegocioException;
 
-    List<String> getHorariosDisponibles(Integer servicioId, LocalDate fecha);
+    void cancelarTurnoPorCodigo(String codigo) throws NegocioException;
 
-    List<TurnoResponseDTO> traerTodos();
+    DisponibilidadResponseDTO traerDisponibilidadPorDiaYServicio(LocalDate fecha, Integer servicioId);
 
-    void cancelarTurnoPorCodigo(String codigoAnulacion) throws NegocioException;
-
-    List<TurnoResponseDTO> obtenerTurnosPorCliente(Integer clienteId);
-
-    List<Turno> findAll();
-
-    DisponibilidadResponseDTO obtenerDisponibilidadPorDiaYServicio(LocalDate fecha, Integer servicioId);
-
-    List<LocalDate> obtenerDiasDisponiblesParaServicio(Servicio servicio);
-
-    List<String> obtenerFechasHabilitadasPorMes(Servicio servicio, int year, int month);
-
-    List<TurnoResponseDTO> traerSoloTurnosReservados();
+    List<String> traerFechasHabilitadasPorMes(Servicio servicio, int year, int month);
 
     List<Turno> obtenerTurnosNoDisponibles();
+
+    List<TurnoResponseDTO> obtenerTurnosPorCliente(Integer clienteId);
 
 }

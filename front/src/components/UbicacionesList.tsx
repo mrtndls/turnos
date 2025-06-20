@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { UbicacionResponseDTO } from "../types/turno";
-import { fetchUbicaciones } from "../api/clienteApi";
+import { UbicacionResponseDTO } from "../types/Turno";
+import { traerUbicaciones } from "../api/clienteApi"; // renombrado
 import useDocumentTitle from "../hooks/useDocumentTitle";
 
 interface Props {
@@ -8,27 +8,28 @@ interface Props {
   onSelectUbicacion: (ubicacion: UbicacionResponseDTO) => void;
 }
 
+// Lista de ubicaciones disponibles para un servicio
 const UbicacionesList = ({ servicioId, onSelectUbicacion }: Props) => {
   useDocumentTitle("UbicacionesList");
 
   const [ubicaciones, setUbicaciones] = useState<UbicacionResponseDTO[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    const load = async () => {
+    const cargar = async () => {
       try {
-        const data = await fetchUbicaciones(servicioId);
+        const data = await traerUbicaciones(servicioId);
         setUbicaciones(data);
       } catch (err) {
-        console.error("Error cargando ubicaciones", err);
+        console.error("Error al traer ubicaciones", err);
       } finally {
-        setLoading(false);
+        setCargando(false);
       }
     };
-    load();
+    cargar();
   }, [servicioId]);
 
-  if (loading) return <div>Cargando ubicaciones...</div>;
+  if (cargando) return <div>Cargando ubicaciones...</div>;
 
   return (
     <div className="p-4 text-center">

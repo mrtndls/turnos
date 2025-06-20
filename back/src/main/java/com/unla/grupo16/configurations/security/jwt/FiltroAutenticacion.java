@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,13 +28,15 @@ import jakarta.servlet.http.HttpServletResponse;
 
 // extiende OncePerRequestFilter : garantiza una sola ejecución por request
 @Component
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class FiltroAutenticacion extends OncePerRequestFilter {
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
+    private final UserServiceImp userDetailsService;
 
-    @Autowired
-    private UserServiceImp userDetailsService;
+    public FiltroAutenticacion(JwtUtil jwtUtil, UserServiceImp userDetailsService) {
+        this.jwtUtil = jwtUtil;
+        this.userDetailsService = userDetailsService;
+    }
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -45,12 +46,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader("Authorization");
         String username = null;
-        String jwt = null;
+        String tokenJwt = null;
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            jwt = authHeader.substring(7);
+            tokenJwt = authHeader.substring(7);
             try {
-                username = jwtUtil.getUsernameFromToken(jwt);
+                username = jwtUtil.traerUsernameDesdeToken(tokenJwt);
             } catch (Exception e) {
                 setErrorResponse(response, HttpStatus.UNAUTHORIZED, "Token invalido");
                 return;
@@ -60,10 +61,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            if (jwtUtil.validateToken(jwt, userDetails)) {
+            if (jwtUtil.validarToken(tokenJwt, userDetails)) {
                 List<String> roles;
                 try {
-                    roles = jwtUtil.getRolesFromToken(jwt);
+                    roles = jwtUtil.traerRolesDesdeToken(tokenJwt);
                 } catch (Exception e) {
                     roles = null;
                 }
@@ -92,7 +93,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.setContentType("application/json");
 
         Map<String, Object> body = Map.of(
-                "timestamp", LocalDateTime.now().toString(),
+                "fechaHora", LocalDateTime.now().toString(),
                 "estado", status.value(),
                 "error", status.getReasonPhrase(),
                 "mensaje", mensaje

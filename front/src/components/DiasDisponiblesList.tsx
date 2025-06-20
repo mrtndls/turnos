@@ -1,4 +1,3 @@
-import React from "react";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import useDiasDisponibles from "../hooks/useDiasDisponibles";
 
@@ -7,12 +6,13 @@ interface Props {
   onSelectFecha: (fecha: string) => void;
 }
 
-function DiasDisponiblesList({ servicioId, onSelectFecha }: Props) {
-  useDocumentTitle("DiasDisponiblesList");
+function ListDiasDisponibles({ servicioId, onSelectFecha }: Props) {
+  useDocumentTitle("Dias Disponibles");
 
-  const { dias, loading, error } = useDiasDisponibles(servicioId);
+  // hook para obtener los dias disponibles desde el back
+  const { dias, cargando, error } = useDiasDisponibles(servicioId);
 
-  if (loading) return <div>Cargando dias disponibles...</div>;
+  if (cargando) return <div>Cargando dias disponibles...</div>;
   if (error) return <div style={{ color: "red" }}>{error}</div>;
   if (dias.length === 0) return <div>No hay dias disponibles.</div>;
 
@@ -32,4 +32,4 @@ function DiasDisponiblesList({ servicioId, onSelectFecha }: Props) {
   );
 }
 
-export default DiasDisponiblesList;
+export default ListDiasDisponibles;

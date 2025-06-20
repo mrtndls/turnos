@@ -10,6 +10,7 @@ import com.unla.grupo16.models.entities.Ubicacion;
 @Repository
 public interface IUbicacionRepository extends JpaRepository<Ubicacion, Integer> {
 
+    // DATALOADER
     Optional<Ubicacion> findByDireccion(String direccion);
 
 }

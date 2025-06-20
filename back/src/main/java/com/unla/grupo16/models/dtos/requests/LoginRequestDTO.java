@@ -4,22 +4,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-@Schema(description = "DTO para login de usuario (autenticación con email y contraseña)")
 public record LoginRequestDTO(
-        @Schema(
-                description = "Email del usuario. Debe ser una dirección válida.",
-                example = "usuario@correo.com",
-                required = true
-        )
-        @Email(message = "Debe ser un email válido")
-        @NotBlank(message = "El email no puede estar vacío")
+        @Schema(example = "usuario@mail.com")
+        @Email(message = "Debe ser un email valido")
+        @NotBlank(message = "El email no puede estar vacio")
         String email,
-        @Schema(
-                description = "Contraseña del usuario",
-                example = "1234password",
-                required = true
-        )
-        @NotBlank(message = "La contraseña no puede estar vacía")
+        @Schema(example = "password")
+        @NotBlank(message = "La contraseña no puede estar vacia")
         String password
         ) {
 

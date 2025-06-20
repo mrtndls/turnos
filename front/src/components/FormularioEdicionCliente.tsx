@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ClienteAdminDTO } from "../types/cliente";
+import { ClienteAdminDTO } from "../types/Cliente";
 
 interface Props {
   cliente: ClienteAdminDTO;
@@ -7,57 +7,80 @@ interface Props {
   onCancelar: () => void;
 }
 
+// form para editar datos de un cliente
 const FormularioEdicionCliente: React.FC<Props> = ({
   cliente,
   onGuardar,
   onCancelar,
 }) => {
-  const [formData, setFormData] = useState<ClienteAdminDTO>({ ...cliente });
+  const [formulario, setFormulario] = useState<ClienteAdminDTO>({ ...cliente });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const manejarCambio = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormulario((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const manejarEnvio = (e: React.FormEvent) => {
     e.preventDefault();
-    onGuardar(formData);
+    onGuardar(formulario);
   };
 
   return (
     <div className="modal">
       <form
-        onSubmit={handleSubmit}
+        onSubmit={manejarEnvio}
         className="p-4 bg-white rounded shadow-md max-w-md mx-auto"
       >
-        <h2 className="text-xl mb-4">Editar Cliente</h2>
+        <h2 className="text-xl font-semibold mb-4">Editar cliente</h2>
 
-        <label>Email:</label>
-        <input name="email" value={formData.email} onChange={handleChange} />
+        <div className="mb-3">
+          <label>Email:</label>
+          <input
+            name="email"
+            value={formulario.email}
+            onChange={manejarCambio}
+            className="border px-2 py-1 w-full"
+          />
+        </div>
 
-        <label>Nombre:</label>
-        <input name="nombre" value={formData.nombre} onChange={handleChange} />
+        <div className="mb-3">
+          <label>Nombre:</label>
+          <input
+            name="nombre"
+            value={formulario.nombre}
+            onChange={manejarCambio}
+            className="border px-2 py-1 w-full"
+          />
+        </div>
 
-        <label>Apellido:</label>
-        <input
-          name="apellido"
-          value={formData.apellido}
-          onChange={handleChange}
-        />
+        <div className="mb-3">
+          <label>Apellido:</label>
+          <input
+            name="apellido"
+            value={formulario.apellido}
+            onChange={manejarCambio}
+            className="border px-2 py-1 w-full"
+          />
+        </div>
 
-        <label>DNI:</label>
-        <input name="dni" value={formData.dni} onChange={handleChange} />
+        <div className="mb-3">
+          <label>DNI:</label>
+          <input
+            name="dni"
+            value={formulario.dni}
+            onChange={manejarCambio}
+            className="border px-2 py-1 w-full"
+          />
+        </div>
 
-        {/* mas atributos */}
-
-        <div className="mt-4 flex justify-end space-x-2">
+        <div className="mt-4 flex justify-end gap-2">
           <button
             type="button"
             onClick={onCancelar}
-            className="bg-gray-400 px-4 py-2 rounded"
+            className="bg-gray-400 text-white px-4 py-2 rounded"
           >
             Cancelar
           </button>

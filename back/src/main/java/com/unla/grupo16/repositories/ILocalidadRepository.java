@@ -10,5 +10,6 @@ import com.unla.grupo16.models.entities.Localidad;
 @Repository
 public interface ILocalidadRepository extends JpaRepository<Localidad, Integer> {
 
+    // DATALOADER
     Optional<Localidad> findByNombre(String nombre);
 }

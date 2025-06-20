@@ -1,7 +1,7 @@
-import React from "react";
 import MenuBase from "./MenuBase";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 
+// menu principal para administrador
 function MenuAdmin() {
   useDocumentTitle("MenuAdmin");
 
@@ -18,7 +18,7 @@ function MenuAdmin() {
     },
   ];
 
-  return <MenuBase title="Menu Administrador" options={options} />;
+  return <MenuBase title="Menu administrador" options={options} />;
 }
 
 export default MenuAdmin;

@@ -6,5 +6,6 @@ import jakarta.mail.MessagingException;
 
 public interface IEmailService {
 
+    // OK
     public void sendEmail(String para, Turno turno) throws MessagingException;
 }

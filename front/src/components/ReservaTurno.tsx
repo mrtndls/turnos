@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ServicioResponseDTO, UbicacionResponseDTO } from "../types/turno";
+import { ServicioResponseDTO, UbicacionResponseDTO } from "../types/Turno";
 import ServiciosList from "./ServiciosList";
 import UbicacionesList from "./UbicacionesList";
 import CalendarioTurnos from "./CalendarioTurnos";
@@ -50,7 +50,7 @@ const ReservaTurno = () => {
       <HorariosDisponiblesList
         servicioId={servicio.id}
         fecha={fecha}
-        onSelectHora={setHora}
+        onSeleccionarHora={setHora}
       />
     );
   }

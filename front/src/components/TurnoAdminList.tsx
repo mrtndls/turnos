@@ -1,10 +1,10 @@
-import React from "react";
-import { TurnoResponseDTO } from "../types/turno";
+import { TurnoResponseDTO } from "../types/Turno";
 
 interface Props {
   turnos: TurnoResponseDTO[];
 }
 
+// Lista de turnos visibles para el administrador
 const TurnoAdminList = ({ turnos }: Props) => {
   if (turnos.length === 0) {
     return <p>No hay turnos disponibles.</p>;
@@ -30,7 +30,7 @@ const TurnoAdminList = ({ turnos }: Props) => {
             <th style={headerCellStyle}>Hora</th>
             <th style={headerCellStyle}>Empleado</th>
             <th style={headerCellStyle}>Cliente</th>
-            <th style={headerCellStyle}>Código Anulación</th>
+            <th style={headerCellStyle}>Codigo Anulacion</th>
           </tr>
         </thead>
         <tbody>
@@ -46,7 +46,9 @@ const TurnoAdminList = ({ turnos }: Props) => {
               <td style={bodyCellStyle}>
                 {turno.nombreServicio ?? "Sin servicio"}
               </td>
-              <td style={bodyCellStyle}>{turno.ubicacionDescripcion}</td>
+              <td style={bodyCellStyle}>
+                {turno.ubicacionDescripcion ?? "Sin ubicación"}
+              </td>
               <td style={bodyCellStyle}>{turno.fecha}</td>
               <td style={bodyCellStyle}>{turno.hora}</td>
               <td style={bodyCellStyle}>
@@ -55,7 +57,7 @@ const TurnoAdminList = ({ turnos }: Props) => {
               <td style={bodyCellStyle}>
                 {turno.nombreCliente ?? "Sin cliente"}
               </td>
-              <td style={bodyCellStyle}>{turno.codigoAnulacion}</td>
+              <td style={bodyCellStyle}>{turno.codigoAnulacion ?? "-"}</td>
             </tr>
           ))}
         </tbody>

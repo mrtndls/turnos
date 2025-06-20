@@ -42,7 +42,7 @@ public class UsersSeeder implements CommandLineRunner {
 
     private void createRolesIfNotExist() {
         if (roleRepository.count() == 0) {
-            roleRepository.save(buildRole(RoleType.USER));   // Cliente
+            roleRepository.save(buildRole(RoleType.CLIENTE));   // Cliente
             roleRepository.save(buildRole(RoleType.ADMIN));  // Admin
         }
     }
@@ -80,8 +80,8 @@ public class UsersSeeder implements CommandLineRunner {
                 .email(email)
                 .activo(true)
                 .password(passwordEncoder.encode(password))
-                .roleEntities(Set.of(roleRepository.findByType(RoleType.USER).orElseThrow(()
-                        -> new RuntimeException("Role USER no encontrado"))))
+                .roleEntities(Set.of(roleRepository.findByType(RoleType.CLIENTE).orElseThrow(()
+                        -> new RuntimeException("Role CLIENTE no encontrado"))))
                 .persona(cliente) // Cliente ya guardado y persistente
                 .build();
         System.out.println("\n\n**CLIENTE**\nusername: " + email + "\npassword:" + password + "\n");

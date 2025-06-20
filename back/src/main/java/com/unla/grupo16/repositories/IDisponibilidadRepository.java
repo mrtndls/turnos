@@ -14,12 +14,15 @@ import com.unla.grupo16.models.entities.Servicio;
 @Repository
 public interface IDisponibilidadRepository extends JpaRepository<Disponibilidad, Integer> {
 
-    List<Disponibilidad> findByServicios_IdAndDiaSemana(Integer servicioId, DayOfWeek diaSemana);
-
+    // OK 
+    // CLIENTE
     List<Disponibilidad> findByServiciosContaining(Servicio servicio);
 
-    Optional<Disponibilidad> findByDiaSemanaAndHoraInicioAndHoraFin(DayOfWeek diaSemana, LocalTime horaInicio, LocalTime horaFin);
+    List<Disponibilidad> findByServicios_IdAndDiaSemana(Integer servicioId, DayOfWeek diaSemana);
 
     List<Disponibilidad> findByDiaSemanaAndServiciosId(DayOfWeek diaSemana, Integer servicioId);
+
+    // DATALOADER
+    Optional<Disponibilidad> findByDiaSemanaAndHoraInicioAndHoraFin(DayOfWeek diaSemana, LocalTime horaInicio, LocalTime horaFin);
 
 }

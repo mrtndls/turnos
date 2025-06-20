@@ -2,6 +2,7 @@ package com.unla.grupo16.controllers;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,12 +27,12 @@ import com.unla.grupo16.exception.NegocioException;
 import com.unla.grupo16.models.dtos.requests.TurnoRequestDTO;
 import com.unla.grupo16.models.dtos.responses.DisponibilidadResponseDTO;
 import com.unla.grupo16.models.dtos.responses.ServicioResponseDTO;
+import com.unla.grupo16.models.dtos.responses.TurnoPreviewResponseDTO;
 import com.unla.grupo16.models.dtos.responses.TurnoResponseDTO;
 import com.unla.grupo16.models.dtos.responses.UbicacionResponseDTO;
 import com.unla.grupo16.models.entities.Cliente;
 import com.unla.grupo16.models.entities.Servicio;
 import com.unla.grupo16.repositories.IServicioRepository;
-import com.unla.grupo16.repositories.IUbicacionRepository;
 import com.unla.grupo16.repositories.IUserRepository;
 import com.unla.grupo16.services.interfaces.ITurnoService;
 
@@ -41,45 +42,46 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Turnos Cliente", description = "Operaciones que pueden realizar los clientes autenticados")
+@Tag(name = "CLIENTE", description = "Operaciones que pueden realizar los clientes autenticados")
 @RestController
 @RequestMapping("/api/cliente")
-@PreAuthorize("hasRole('USER')")
-public class ClienteTurnoRestController {
+@PreAuthorize("hasRole('CLIENTE')")
+public class ClienteController {
 
     private final IServicioRepository servicioRepository;
+    private final IUserRepository userRepository;
+
     private final ITurnoService turnoService;
-    private final IUbicacionRepository ubicacionRepository;
-    private final IUserRepository userRepo;
+
     private final ServicioMapper servicioMapper;
     private final UbicacionMapper ubicacionMapper;
 
-    public ClienteTurnoRestController(
+    public ClienteController(
             IServicioRepository servicioRepository,
             ITurnoService turnoService,
-            IUbicacionRepository ubicacionRepository,
-            IUserRepository userRepo,
+            IUserRepository userRepository,
             ServicioMapper servicioMapper,
             UbicacionMapper ubicacionMapper
     ) {
         this.servicioRepository = servicioRepository;
         this.turnoService = turnoService;
-        this.ubicacionRepository = ubicacionRepository;
-        this.userRepo = userRepo;
+        this.userRepository = userRepository;
         this.servicioMapper = servicioMapper;
         this.ubicacionMapper = ubicacionMapper;
     }
 
-    @Operation(summary = "Listar todos los servicios disponibles")
+    // OK
+    @Operation(summary = "Traer todos los servicios disponibles")
     @GetMapping("/servicios")
-    public ResponseEntity<List<ServicioResponseDTO>> listarServicios() {
+    public ResponseEntity<List<ServicioResponseDTO>> traerServicios() {
         List<Servicio> servicios = servicioRepository.findAll();
         return ResponseEntity.ok(servicioMapper.toDTOList(servicios));
     }
 
-    @Operation(summary = "Listar ubicaciones asociadas a un servicio")
+    // OK
+    @Operation(summary = "Traer ubicaciones asociadas a un servicio")
     @GetMapping("/servicios/{servicioId}/ubicaciones")
-    public ResponseEntity<List<UbicacionResponseDTO>> listarUbicaciones(
+    public ResponseEntity<List<UbicacionResponseDTO>> traerUbicaciones(
             @Parameter(description = "ID del servicio") @PathVariable Integer servicioId) {
         Servicio servicio = servicioRepository.findById(servicioId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Servicio no encontrado"));
@@ -87,43 +89,37 @@ public class ClienteTurnoRestController {
         return ResponseEntity.ok(ubicacionMapper.toDTOList(servicio.getUbicaciones()));
     }
 
-    @Operation(summary = "Obtener los dias disponibles para un servicio")
+    // OK
+    @Operation(summary = "Traer los dias disponibles para un servicio")
     @GetMapping("/servicios/{servicioId}/dias-disponibles")
-    public ResponseEntity<List<LocalDate>> diasDisponibles(
+    public ResponseEntity<List<LocalDate>> traerDias(
             @Parameter(description = "ID del servicio") @PathVariable Integer servicioId) {
         Servicio servicio = servicioRepository.findById(servicioId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Servicio no encontrado"));
 
-        List<LocalDate> dias = turnoService.obtenerDiasDisponiblesParaServicio(servicio);
+        List<LocalDate> dias = turnoService.traerDiasDisponiblesParaServicio(servicio);
         return ResponseEntity.ok(dias);
     }
 
-    @Operation(summary = "Obtener horarios disponibles para una fecha y servicio")
+    // OK no hace lo mismo que el otro ?
+    @Operation(summary = "Traer horarios disponibles para una fecha y servicio")
     @GetMapping("/servicios/{servicioId}/fechas/{fecha}/horarios")
     public ResponseEntity<List<String>> horariosDisponibles(
             @Parameter(description = "ID del servicio") @PathVariable Integer servicioId,
-            @Parameter(description = "Fecha del turno (yyyy-MM-dd)")
+            @Parameter(description = "Fecha del turno (aaaa-mm-dd)")
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
-        return ResponseEntity.ok(turnoService.getHorariosDisponibles(servicioId, fecha));
+        return ResponseEntity.ok(turnoService.traerHorariosDisponiblesParaServicio(servicioId, fecha));
     }
 
-    @Operation(summary = "Previsualizar datos del turno antes de confirmarlo")
+    // OK
+    @Operation(summary = "Preview del turno antes de confirmarlo")
     @PostMapping("/confirmar")
-    public ResponseEntity<Map<String, Object>> confirmarDatos(@RequestBody TurnoRequestDTO dto) {
-        Map<String, Object> datos = new HashMap<>();
-
-        servicioRepository.findById(dto.getIdServicio())
-                .ifPresent(s -> datos.put("servicio", servicioMapper.toDTO(s)));
-
-        ubicacionRepository.findById(dto.getIdUbicacion())
-                .ifPresent(u -> datos.put("ubicacion", ubicacionMapper.toDTO(u)));
-
-        datos.put("fecha", dto.getFecha());
-        datos.put("hora", dto.getHora());
-
-        return ResponseEntity.ok(datos);
+    public ResponseEntity<TurnoPreviewResponseDTO> confirmarDatos(@RequestBody TurnoRequestDTO dto) {
+        TurnoPreviewResponseDTO preview = turnoService.generarPreview(dto);
+        return ResponseEntity.ok(preview);
     }
 
+    // OK
     @Operation(summary = "Crear un nuevo turno para el cliente autenticado")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Turno creado exitosamente"),
@@ -131,31 +127,46 @@ public class ClienteTurnoRestController {
     })
     @PostMapping
     public ResponseEntity<TurnoResponseDTO> crearTurno(@RequestBody TurnoRequestDTO dto, Principal principal) {
-        Cliente cliente = getClienteAutenticado(principal);
+        Cliente cliente = traerClienteAutenticado(principal);
 
-        try {
-            return ResponseEntity.ok(turnoService.crearTurno(dto, cliente, principal.getName()));
-        } catch (NegocioException ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
-        }
+        TurnoResponseDTO turno = turnoService.crearTurno(dto, cliente, principal.getName());
+
+        return ResponseEntity.ok(turno);
     }
 
-    @Operation(summary = "Anular un turno utilizando el codigo de anulacion")
+    // OK
+    @Operation(summary = "Anular un turno utilizando el código de anulación")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Turno anulado con éxito"),
+        @ApiResponse(responseCode = "400", description = "Error de negocio (ej: el turno ya estaba disponible)")
+    })
     @PostMapping("/anular")
-    public ResponseEntity<Map<String, String>> anularTurno(
-            @Parameter(description = "Codigo de anulacion enviado por email") @RequestParam String codigoAnulacion) {
+    public ResponseEntity<Map<String, Object>> anularTurno(
+            @Parameter(description = "Código de anulación enviado por email")
+            @RequestParam String codigoAnulacion) {
         try {
             turnoService.cancelarTurnoPorCodigo(codigoAnulacion);
-            return ResponseEntity.ok(Map.of("mensaje", "Turno anulado con exito"));
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("timestamp", LocalDateTime.now());
+            body.put("estado", 200);
+            body.put("mensaje", "Turno anulado con éxito");
+            return ResponseEntity.ok(body);
+
         } catch (NegocioException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+            Map<String, Object> error = new HashMap<>();
+            error.put("timestamp", LocalDateTime.now());
+            error.put("estado", 400);
+            error.put("mensaje", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
         }
     }
 
+    // OK
     @Operation(summary = "Ver turnos del cliente autenticado")
     @GetMapping("/mis-turnos")
-    public ResponseEntity<List<TurnoResponseDTO>> getTurnosDelCliente(Principal principal) {
-        Cliente cliente = getClienteAutenticado(principal);
+    public ResponseEntity<List<TurnoResponseDTO>> traerTurnosDelCliente(Principal principal) {
+        Cliente cliente = traerClienteAutenticado(principal);
         return ResponseEntity.ok(turnoService.obtenerTurnosPorCliente(cliente.getId()));
     }
 
@@ -164,13 +175,14 @@ public class ClienteTurnoRestController {
     public ResponseEntity<DisponibilidadResponseDTO> getDisponibilidadPorDia(
             @PathVariable Integer servicioId,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
-        DisponibilidadResponseDTO dto = turnoService.obtenerDisponibilidadPorDiaYServicio(fecha, servicioId);
+        DisponibilidadResponseDTO dto = turnoService.traerDisponibilidadPorDiaYServicio(fecha, servicioId);
         return ResponseEntity.ok(dto);
     }
 
+    // OK
     @Operation(summary = "Obtener fechas habilitadas de un servicio en un mes especifico")
     @GetMapping("/servicios/{servicioId}/fechas-habilitadas")
-    public ResponseEntity<List<String>> obtenerFechasHabilitadas(
+    public ResponseEntity<List<String>> traerFechasHabilitadas(
             @PathVariable Integer servicioId,
             @RequestParam Integer year,
             @RequestParam Integer month) {
@@ -178,14 +190,15 @@ public class ClienteTurnoRestController {
         Servicio servicio = servicioRepository.findById(servicioId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Servicio no encontrado"));
 
-        List<String> fechasHabilitadas = turnoService.obtenerFechasHabilitadasPorMes(servicio, year, month);
+        List<String> fechasHabilitadas = turnoService.traerFechasHabilitadasPorMes(servicio, year, month);
 
         return ResponseEntity.ok(fechasHabilitadas);
     }
 
+    // OK
     // Interno
-    private Cliente getClienteAutenticado(Principal principal) {
-        return userRepo.findByEmailOnlyIfHasPersona(principal.getName())
+    private Cliente traerClienteAutenticado(Principal principal) {
+        return userRepository.findByEmailOnlyIfHasPersona(principal.getName())
                 .map(user -> Hibernate.unproxy(user.getPersona()))
                 .filter(Cliente.class::isInstance)
                 .map(Cliente.class::cast)

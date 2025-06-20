@@ -20,6 +20,7 @@ public class UserServiceImp implements IUserService {
         this.userRepository = userRepository;
     }
 
+    // jwt
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

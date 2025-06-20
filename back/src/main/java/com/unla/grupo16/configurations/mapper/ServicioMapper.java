@@ -12,12 +12,12 @@ import com.unla.grupo16.models.entities.Servicio;
 public class ServicioMapper {
 
     public ServicioResponseDTO toDTO(Servicio servicio) {
-        ServicioResponseDTO dto = new ServicioResponseDTO();
-        dto.setId(servicio.getId());
-        dto.setNombre(servicio.getNombre());
-        dto.setDescripcion(servicio.getDescripcion());
-        dto.setDuracion(servicio.getDuracion());
-        return dto;
+        return new ServicioResponseDTO(
+            servicio.getId(),
+            servicio.getNombre(),
+            servicio.getDescripcion(),
+            servicio.getDuracion()
+        );
     }
 
     public List<ServicioResponseDTO> toDTOList(List<Servicio> servicios) {

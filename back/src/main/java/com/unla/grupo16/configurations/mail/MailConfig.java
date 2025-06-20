@@ -12,9 +12,7 @@ public class MailConfig {
 
     // configura el sv SMTP de gmail
     // para enviar mails desde la aplicacion
-    // como y donde se conect
-    //private String username = "martinabeldialessio@gmail.com";
-    //private String password = "bmqjzqcifpjvrtsw";
+    // como y donde se conecta
     
     @Value("${MAIL_USERNAME}")
     private String username;
@@ -23,25 +21,28 @@ public class MailConfig {
     private String password;
 
     @Bean
-    public JavaMailSenderImpl mailSender() {
-        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+    public JavaMailSenderImpl enviarEmail() {
+        
+        // creo instancia de JavaMailSenderImpl
+        JavaMailSenderImpl servicioCorreo = new JavaMailSenderImpl();
         // puerto y host para gmail
-        mailSender.setHost("smtp.gmail.com");
-        mailSender.setPort(587);
+        servicioCorreo.setHost("smtp.gmail.com");
+        servicioCorreo.setPort(587);
         // usa la pw de la cuenta de gmail
-        mailSender.setUsername(username);
-        mailSender.setPassword(password);
+        servicioCorreo.setUsername(username);
+        servicioCorreo.setPassword(password);
 
-        Properties props = mailSender.getJavaMailProperties();
+        // setea las propiedades de javamail 
+        Properties props = servicioCorreo.getJavaMailProperties();
         // habilitar auth SMTP
         props.put("mail.smtp.auth", "true");
         // habilitar STARTTLS
         props.put("mail.smtp.starttls.enable", "true");
-        // habilitar trust para el sv gmaik
+        // habilitar trust para el sv gmail
         props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
         // habilitar starttls obligatorio
         props.put("mail.smtp.starttls.required", "true");
 
-        return mailSender;
+        return servicioCorreo;
     }
 }

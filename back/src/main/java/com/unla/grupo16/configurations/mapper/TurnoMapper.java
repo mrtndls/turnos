@@ -17,28 +17,15 @@ public class TurnoMapper {
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
     public TurnoResponseDTO toDTO(Turno turno) {
-        TurnoResponseDTO dto = new TurnoResponseDTO();
-
-        dto.setId(turno.getId());
-
-        // fecha y hora
         LocalDateTime fechaHora = turno.getFechaHora();
-        if (fechaHora != null) {
-            dto.setFecha(fechaHora.toLocalDate().format(DATE_FORMATTER));
-            dto.setHora(fechaHora.toLocalTime().format(TIME_FORMATTER));
-        }
 
-        // servicio
-        dto.setNombreServicio(turno.getServicio() != null ? turno.getServicio().getNombre() : null);
+        String fecha = fechaHora != null ? fechaHora.toLocalDate().format(DATE_FORMATTER) : null;
+        String hora = fechaHora != null ? fechaHora.toLocalTime().format(TIME_FORMATTER) : null;
 
-        // empleado
-        dto.setNombreEmpleado(turno.getEmpleado() != null
-                ? turno.getEmpleado().getNombre()
-                : "A confirmar");
+        String nombreServicio = turno.getServicio() != null ? turno.getServicio().getNombre() : null;
+        String nombreEmpleado = turno.getEmpleado() != null ? turno.getEmpleado().getNombre() : "A confirmar";
+        String nombreCliente = turno.getCliente() != null ? turno.getCliente().getNombre() : null;
 
-        dto.setNombreCliente(turno.getCliente() != null ? turno.getCliente().getNombre() : null);
-
-        // ubicacion
         String ubicacionDescripcion = "Sin ubicacion";
         Servicio servicio = turno.getServicio();
         if (servicio != null && servicio.getUbicaciones() != null && !servicio.getUbicaciones().isEmpty()) {
@@ -53,17 +40,22 @@ public class TurnoMapper {
                     })
                     .orElse("Sin ubicacion");
         }
-        dto.setUbicacionDescripcion(ubicacionDescripcion);
 
-        // otros campos
-        dto.setCodigoAnulacion(turno.getCodigoAnulacion());
-
-        return dto;
+        return new TurnoResponseDTO(
+                turno.getId(),
+                fecha,
+                hora,
+                nombreServicio,
+                nombreEmpleado,
+                nombreCliente,
+                ubicacionDescripcion,
+                turno.getCodigoAnulacion()
+        );
     }
 
     public Turno toEntity(TurnoRequestDTO dto) {
         Turno turno = new Turno();
-        turno.setFechaHora(LocalDateTime.of(dto.getFecha(), dto.getHora()));
+        turno.setFechaHora(LocalDateTime.of(dto.fecha(), dto.hora()));
         turno.setDisponible(false); // reservado por defecto
         return turno;
     }

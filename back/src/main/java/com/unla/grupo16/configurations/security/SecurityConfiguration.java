@@ -13,8 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.unla.grupo16.configurations.security.jwt.JwtAuthenticationEntryPoint;
-import com.unla.grupo16.configurations.security.jwt.JwtAuthenticationFilter;
+import com.unla.grupo16.configurations.security.jwt.ErrorAutenticacion;
+import com.unla.grupo16.configurations.security.jwt.FiltroAutenticacion;
 import com.unla.grupo16.services.impl.UserServiceImp;
 
 import lombok.RequiredArgsConstructor;
@@ -24,30 +24,23 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfiguration {
 
-    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final ErrorAutenticacion errorAutenticacion;
+    private final FiltroAutenticacion filtroAutenticacion;
     private final UserServiceImp userService;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    /**
-     * Codificador de contraseñas usando BCrypt (seguro y recomendado).
-     */
+    // encripta la pw
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * Configura la cadena de filtros de seguridad.
-     */
+    // config seguridad http
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // CORS habilitado (puede mejorarse con configuración explícita si es necesario)
                 .cors(cors -> {
                 })
-                // CSRF deshabilitado porque es una API stateless con JWT
-                .csrf(csrf -> csrf.disable())
-                // Autorización por rutas
+                .csrf(csrf -> csrf.disable()) // ahora uso jwt
                 .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                         "/api/auth/login",
@@ -55,29 +48,23 @@ public class SecurityConfiguration {
                         "/swagger-ui/**",
                         "/swagger-ui.html"
                 ).permitAll()
-                .requestMatchers("/api/cliente/**").hasRole("USER")
+                .requestMatchers("/api/cliente/**").hasRole("CLIENTE")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
                 )
-                // Manejo de excepciones (por ejemplo: token inválido)
                 .exceptionHandling(ex -> ex
-                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                .authenticationEntryPoint(errorAutenticacion) // 401
                 )
-                // Política de sesión: sin sesiones (JWT)
                 .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // solo jwt 
                 );
 
-        // Filtro JWT antes del filtro de username/password de Spring
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(filtroAutenticacion, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    /**
-     * Proveedor de autenticación usando el UserDetailsService personalizado y
-     * codificador.
-     */
+    // carga usuarios de la bd y compara la pw 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userService);
@@ -85,9 +72,7 @@ public class SecurityConfiguration {
         return authProvider;
     }
 
-    /**
-     * AuthenticationManager que usará nuestro proveedor personalizado.
-     */
+    // encargado del login 
     @Bean
     public AuthenticationManager authManager(HttpSecurity http) throws Exception {
         return http.getSharedObject(AuthenticationManagerBuilder.class)

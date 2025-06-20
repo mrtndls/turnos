@@ -11,6 +11,7 @@ import com.unla.grupo16.models.enums.RoleType;
 @Repository
 public interface IRoleRepository extends JpaRepository<RoleEntity, Integer> {
 
+    // USERS SEEDER
     Optional<RoleEntity> findByType(RoleType type);
 
 }

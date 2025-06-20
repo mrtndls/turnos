@@ -1,8 +1,8 @@
 // para sacar la logica dentro del /routes/admin y del component en si.
 
 import { useEffect, useState } from "react";
-import { ClienteAdminDTO, ClientesAdminResponse } from "../types/cliente";
-import { fetchClientes, darDeBajaCliente, darDeAltaCliente, editarCliente } from "../api/adminApi";
+import { ClienteAdminDTO, ClientesAdminResponse } from "../types/Cliente";
+import { traerClientes, darDeBajaCliente, darDeAltaCliente, editarCliente } from "../api/adminApi";
 
 export const useClientes = () => {
 
@@ -19,7 +19,7 @@ export const useClientes = () => {
 
       try {
 
-        const res: ClientesAdminResponse = await fetchClientes();
+        const res: ClientesAdminResponse = await traerClientes();
         setClientes({
           activos: res.clientesActivos,
           dadosDeBaja: res.clientesBajaLogica,

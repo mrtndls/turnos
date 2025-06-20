@@ -28,18 +28,19 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
-@Tag(name = "Administracion de Clientes", description = "Operaciones para la gestion de clientes y turnos (solo ADMIN)")
+@Tag(name = "ADMIN", description = "Operaciones para la gestion de clientes y turnos (solo ADMIN)")
 @RestController
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('ADMIN')")
-public class AdminClienteRestController {
+public class AdminController {
 
     private final IClienteService clienteService;
     private final ITurnoService turnoService;
     private final TurnoMapper turnoMapper;
 
-    public AdminClienteRestController(IClienteService clienteService, ITurnoService turnoService, TurnoMapper turnoMapper) {
+    public AdminController(IClienteService clienteService, ITurnoService turnoService, TurnoMapper turnoMapper) {
         this.clienteService = clienteService;
         this.turnoService = turnoService;
         this.turnoMapper = turnoMapper;
@@ -47,7 +48,7 @@ public class AdminClienteRestController {
 
     @Operation(summary = "Listar turnos no disponibles (reservados)")
     @GetMapping("/turnos")
-    public ResponseEntity<List<TurnoResponseDTO>> listarTurnosNoDisponibles() {
+    public ResponseEntity<List<TurnoResponseDTO>> traerTurnosNoDisponibles() {
         List<Turno> turnos = turnoService.obtenerTurnosNoDisponibles();
         List<TurnoResponseDTO> dtos = turnos.stream()
                 .map(turnoMapper::toDTO)
@@ -57,8 +58,8 @@ public class AdminClienteRestController {
 
     @Operation(summary = "Listar todos los clientes (activos y dados de baja)")
     @GetMapping("/clientes")
-    public ResponseEntity<ClientesAdminResponseDTO> listarClientes() {
-        ClientesAdminResponseDTO response = clienteService.obtenerClientesActivosYBajaLogica();
+    public ResponseEntity<ClientesAdminResponseDTO> traerClientes() {
+        ClientesAdminResponseDTO response = clienteService.traerClientesActivosYBajaLogica();
         return ResponseEntity.ok(response);
     }
 
@@ -101,7 +102,7 @@ public class AdminClienteRestController {
     @PutMapping("/{clienteId}")
     public ResponseEntity<ClienteAdminDTO> editarCliente(
             @Parameter(description = "ID del cliente") @PathVariable Integer clienteId,
-            @RequestBody ClienteAdminDTO clienteDto) {
+            @Valid @RequestBody ClienteAdminDTO clienteDto) {
         try {
             ClienteAdminDTO clienteActualizado = clienteService.editarCliente(clienteId, clienteDto);
             return ResponseEntity.ok(clienteActualizado);

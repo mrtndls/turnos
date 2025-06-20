@@ -1,50 +1,56 @@
-// AuthService : en el back = logica de negocio y validacion del lado del sv
-// son servicios para consumir el back
+// src/api/AuthService.ts
+
+// AuthService: se encarga de la comunicación con el backend para autenticación
+// Es la capa que hace peticiones al servidor y maneja sesión del lado del cliente
 
 import axios from "axios";
-import { User } from "../types/User";
+import { Usuario } from "../types/Usuario";
 
-// URL base para autenticacion
+// URL base del back paar la auth
 const API_BASE_URL = "http://localhost:8080/api/auth";
 
-// separar almacenamiento local en funciones reutilizables
-const saveUserToLocalStorage = (user: User) => {
-  localStorage.setItem("token", user.token);
-  localStorage.setItem("email", user.email);
-  localStorage.setItem("rol", user.rol);
+// guarda datos del usuario en localStorage
+const guardarUsuarioEnLocalStorage = (usuario: Usuario) => {
+  localStorage.setItem("token", usuario.token);
+  localStorage.setItem("email", usuario.email);
+  localStorage.setItem("rol", usuario.rol);
 };
 
-// limpiar almacenamiento local
-const clearUserFromLocalStorage = () => {
+// elimina los datos del usuario del localStorage
+const limpiarUsuarioDeLocalStorage = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("email");
   localStorage.removeItem("rol");
 };
 
-// login con mejor manejo de errores
-export const loginUser = async (email: string, password: string): Promise<User> => {
+// iniciar sesion y envia mail y pw al back
+export const loginUsuario = async (email: string, password: string): Promise<Usuario> => {
   try {
     const { data } = await axios.post(`${API_BASE_URL}/login`, { email, password });
 
-    const { token, email: userEmail, rol } = data;
+    const { token, email: emailUsuario, rol } = data;
 
-    if (!token || !userEmail || !rol) {
-      throw new Error("Respuesta inválida del servidor");
+    // valida rta del sv
+    if (!token || !emailUsuario || !rol) {
+      throw new Error("Respuesta invalida del servidor");
     }
 
-    const cleanedRol = rol.replace("ROLE_", "") as "ADMIN" | "USER";
-    const user: User = { email: userEmail, token, rol: cleanedRol };
+    // limpia el ROLE_ del rol recibido
+    const rolLimpio = rol.replace("ROLE_", "") as "ADMIN" | "CLIENTE";
 
-    saveUserToLocalStorage(user);
+    const usuario: Usuario = { email: emailUsuario, token, rol: rolLimpio };
 
-    return user;
+    // guarda sesion
+    guardarUsuarioEnLocalStorage(usuario);
+
+    return usuario;
   } catch (error: any) {
-    console.error("Error en login:", error.response?.data || error.message);
+    console.error("Error al iniciar sesion:", error.response?.data || error.message);
     throw new Error("Credenciales incorrectas o error en el servidor.");
   }
 };
 
-// logout para el service
-export const logoutUser = () => {
-  clearUserFromLocalStorage();
+// cerrar sesion y limpiar localStorage
+export const logoutUsuario = () => {
+  limpiarUsuarioDeLocalStorage();
 };

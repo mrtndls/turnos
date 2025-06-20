@@ -1,6 +1,4 @@
-import React from "react";
-import { ClienteAdminDTO } from "../types/cliente";
-import useDocumentTitle from "../hooks/useDocumentTitle";
+import { ClienteAdminDTO } from "../types/Cliente";
 
 interface Props {
   activos: ClienteAdminDTO[];
@@ -10,21 +8,62 @@ interface Props {
   onEditar: (cliente: ClienteAdminDTO) => void;
 }
 
-const ClienteAdminList = ({
+export default function ClienteAdminList({
   activos,
   dadosDeBaja,
   onDarDeBaja,
   onDarDeAlta,
   onEditar,
-}: Props) => {
-  useDocumentTitle("Clientes | Administración");
+}: Props) {
+  return (
+    <div style={{ overflowX: "auto", padding: "1rem" }}>
+      <h2 style={sectionTitle}>Clientes activos</h2>
+      {activos.length > 0 ? (
+        <Tabla
+          clientes={activos}
+          esActivo
+          onDarDeBaja={onDarDeBaja}
+          onEditar={onEditar}
+        />
+      ) : (
+        <p>No hay clientes activos.</p>
+      )}
 
-  const renderTabla = (clientes: ClienteAdminDTO[], esActivo: boolean) => (
+      <h2 style={{ ...sectionTitle, marginTop: "2rem" }}>
+        Clientes dados de baja
+      </h2>
+      {dadosDeBaja.length > 0 ? (
+        <Tabla clientes={dadosDeBaja} onDarDeAlta={onDarDeAlta} />
+      ) : (
+        <p>No hay clientes dados de baja.</p>
+      )}
+    </div>
+  );
+}
+
+type TablaProps = {
+  clientes: ClienteAdminDTO[];
+  esActivo?: boolean;
+  onDarDeBaja?: (id: number) => void;
+  onDarDeAlta?: (id: number) => void;
+  onEditar?: (cliente: ClienteAdminDTO) => void;
+};
+
+function Tabla({
+  clientes,
+  esActivo = false,
+  onDarDeBaja,
+  onDarDeAlta,
+  onEditar,
+}: TablaProps) {
+  return (
     <table
       style={{
         width: "100%",
+        minWidth: "900px",
         borderCollapse: "collapse",
-        minWidth: "700px",
+        fontFamily: "Arial, sans-serif",
+        fontSize: "14px",
         marginTop: "1rem",
       }}
     >
@@ -32,10 +71,7 @@ const ClienteAdminList = ({
         <tr style={{ backgroundColor: "#f3f4f6", textAlign: "center" }}>
           <th style={headerCellStyle}>ID</th>
           <th style={headerCellStyle}>Email</th>
-          <th style={headerCellStyle}>Baja Lógica</th>
-          <th style={headerCellStyle}>Turno Activo</th>
-          <th style={headerCellStyle}>Creado</th>
-          <th style={headerCellStyle}>Actualizado</th>
+          <th style={headerCellStyle}>Activo</th>
           <th style={headerCellStyle}>Nombre</th>
           <th style={headerCellStyle}>Apellido</th>
           <th style={headerCellStyle}>DNI</th>
@@ -46,16 +82,14 @@ const ClienteAdminList = ({
         {clientes.map((cliente, index) => (
           <tr
             key={cliente.id}
-            style={{ backgroundColor: index % 2 === 0 ? "#fff" : "#f9fafb" }}
+            style={{
+              backgroundColor: index % 2 === 0 ? "#ffffff" : "#f9fafb",
+              textAlign: "center",
+            }}
           >
             <td style={bodyCellStyle}>{cliente.id}</td>
             <td style={bodyCellStyle}>{cliente.email}</td>
-            <td style={bodyCellStyle}>{cliente.clienteActivo ? "No" : "Sí"}</td>
-            <td style={bodyCellStyle}>
-              {cliente.tieneTurnosActivos ? "Sí" : "No"}
-            </td>
-            <td style={bodyCellStyle}>{formatFecha(cliente.createdAt)}</td>
-            <td style={bodyCellStyle}>{formatFecha(cliente.updatedAt)}</td>
+            <td style={bodyCellStyle}>{cliente.clienteActivo ? "Sí" : "No"}</td>
             <td style={bodyCellStyle}>{cliente.nombre}</td>
             <td style={bodyCellStyle}>{cliente.apellido}</td>
             <td style={bodyCellStyle}>{cliente.dni}</td>
@@ -63,22 +97,22 @@ const ClienteAdminList = ({
               {esActivo ? (
                 <>
                   <button
-                    onClick={() => onDarDeBaja(cliente.id)}
-                    className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600 mb-1"
+                    style={buttonStyle("red")}
+                    onClick={() => onDarDeBaja?.(cliente.id)}
                   >
                     Dar de baja
-                  </button>
+                  </button>{" "}
                   <button
-                    onClick={() => onEditar(cliente)}
-                    className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 mb-1 ml-2"
+                    style={buttonStyle("blue")}
+                    onClick={() => onEditar?.(cliente)}
                   >
                     Editar
                   </button>
                 </>
               ) : (
                 <button
-                  onClick={() => onDarDeAlta(cliente.id)}
-                  className="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 mb-1"
+                  style={buttonStyle("green")}
+                  onClick={() => onDarDeAlta?.(cliente.id)}
                 >
                   Dar de alta
                 </button>
@@ -89,62 +123,37 @@ const ClienteAdminList = ({
       </tbody>
     </table>
   );
+}
 
-  return (
-    <div style={{ overflowX: "auto", marginTop: "1rem" }}>
-      <h2 style={{ fontWeight: "bold", fontSize: "1.25rem" }}>
-        Clientes activos
-      </h2>
-      {activos.length > 0 ? (
-        renderTabla(activos, true)
-      ) : (
-        <p>No hay clientes activos.</p>
-      )}
-
-      <h2
-        style={{ fontWeight: "bold", fontSize: "1.25rem", marginTop: "2rem" }}
-      >
-        Clientes dados de baja
-      </h2>
-      {dadosDeBaja.length > 0 ? (
-        renderTabla(dadosDeBaja, false)
-      ) : (
-        <p>No hay clientes dados de baja.</p>
-      )}
-    </div>
-  );
-};
-
-const formatFecha = (fecha?: string) => {
-  if (!fecha) return "-";
-
-  try {
-    const date = new Date(fecha);
-    return date.toLocaleString("es-AR", {
-      timeZone: "America/Argentina/Buenos_Aires",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-    });
-  } catch {
-    return fecha;
-  }
+// 🧱 Estilos base
+const sectionTitle: React.CSSProperties = {
+  fontSize: "1.25rem",
+  fontWeight: "700",
+  marginBottom: "0.5rem",
 };
 
 const headerCellStyle: React.CSSProperties = {
   padding: "10px 15px",
   border: "1px solid #d1d5db",
-  fontWeight: "bold",
+  fontWeight: "600",
+  color: "#374151",
 };
 
 const bodyCellStyle: React.CSSProperties = {
   padding: "10px 15px",
   border: "1px solid #e5e7eb",
-  textAlign: "center",
+  color: "#1f2937",
+  verticalAlign: "middle",
 };
 
-export default ClienteAdminList;
+// 🎨 Botón con color variable
+const buttonStyle = (color: "red" | "blue" | "green"): React.CSSProperties => ({
+  backgroundColor:
+    color === "red" ? "#ef4444" : color === "blue" ? "#3b82f6" : "#10b981", // green
+  color: "#ffffff",
+  border: "none",
+  padding: "6px 10px",
+  borderRadius: "4px",
+  cursor: "pointer",
+  margin: "0 4px",
+});

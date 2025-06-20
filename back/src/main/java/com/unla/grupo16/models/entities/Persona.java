@@ -40,7 +40,7 @@ public abstract class Persona {
     @Column(name = "dni_persona")
     private String dni;
 
-    // ✅ Lógica común implementada acá
+    // AUTH
     public String getNombreCompleto() {
         return this.nombre + " " + this.apellido;
     }

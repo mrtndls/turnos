@@ -1,17 +1,19 @@
-import React, { useEffect, useState } from "react";
-import { TurnoResponseDTO } from "../types/turno";
-import useDocumentTitle from "../hooks/useDocumentTitle";
-import { fetchAllTurnos } from "../api/adminApi";
+// lista de todos los turnos para admin
+
+import { useEffect, useState } from "react";
+import { TurnoResponseDTO } from "../types/Turno";
+import { traerTodosLosTurnos } from "../api/adminApi";
 import TurnoAdminList from "../components/TurnoAdminList";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 const TurnoAdminListWrapper = () => {
-  useDocumentTitle("Turnos | Administración");
+  useDocumentTitle("Turnos | Administracion");
 
   const [turnos, setTurnos] = useState<TurnoResponseDTO[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchAllTurnos()
+    traerTodosLosTurnos()
       .then(setTurnos)
       .catch((err) => console.error("Error al cargar turnos", err))
       .finally(() => setLoading(false));

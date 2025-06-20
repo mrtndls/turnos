@@ -15,6 +15,10 @@ import com.unla.grupo16.models.entities.Turno;
 @Repository
 public interface ITurnoRepository extends JpaRepository<Turno, Integer> {
 
+    List<Turno> findByDisponibleFalseOrderByFechaHoraAsc();
+
+    // OK 
+    // CLIENTE
     @Query("SELECT t FROM Turno t WHERE t.servicio.id = :servicioId AND t.fechaHora >= :inicio AND t.fechaHora < :fin AND t.disponible = false")
     List<Turno> findByServicioIdAndFecha(
             @Param("servicioId") Integer servicioId,
@@ -27,7 +31,5 @@ public interface ITurnoRepository extends JpaRepository<Turno, Integer> {
     List<Turno> findByClienteIdAndDisponibleFalse(Integer clienteId);
 
     boolean existsByEmpleadoAndFechaHoraAndDisponibleFalse(Empleado empleado, LocalDateTime fechaHora);
-
-    List<Turno> findByDisponibleFalseOrderByFechaHoraAsc();
 
 }

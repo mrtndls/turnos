@@ -23,6 +23,7 @@ public class EmailServiceImpl implements IEmailService {
         this.templateEngine = templateEngine;
     }
 
+    // OK
     @Override
     public void sendEmail(String para, Turno turno) throws MessagingException {
 

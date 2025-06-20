@@ -16,7 +16,6 @@ import com.unla.grupo16.exception.RecursoNoEncontradoException;
 import com.unla.grupo16.exception.UsuarioDeshabilitadoException;
 import com.unla.grupo16.models.dtos.requests.LoginRequestDTO;
 import com.unla.grupo16.models.dtos.responses.LoginResponseDto;
-import com.unla.grupo16.models.entities.Persona;
 import com.unla.grupo16.models.entities.UserEntity;
 import com.unla.grupo16.repositories.IUserRepository;
 
@@ -26,7 +25,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
-@Tag(name = "Autenticación", description = "Autenticación de usuarios mediante JWT")
+@Tag(name = "AUTENTICACION", description = "Autenticacion de usuarios mediante JWT")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -42,7 +41,7 @@ public class AuthController {
     }
 
     @Operation(summary = "Autenticar usuario y generar JWT")
-    @ApiResponses(value = {
+    @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Autenticacion exitosa"),
         @ApiResponse(responseCode = "401", description = "Credenciales invalidas"),
         @ApiResponse(responseCode = "403", description = "Usuario deshabilitado"),
@@ -52,44 +51,44 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
         try {
-            var authentication = authenticationManager.authenticate(
+            var auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.email(),
                             loginRequest.password()
                     )
             );
 
-            var authenticatedUser = (UserDetails) authentication.getPrincipal();
+            var userDetails = (UserDetails) auth.getPrincipal();
 
-            UserEntity user = userRepo.findByEmailWithPersona(authenticatedUser.getUsername())
+            UserEntity usuario = userRepo.findByEmailWithPersona(userDetails.getUsername())
                     .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
 
-            if (!user.isEnabled()) {
+            if (!usuario.isEnabled()) {
                 throw new UsuarioDeshabilitadoException("El usuario esta deshabilitado");
             }
 
-            String token = jwtUtil.generateToken(authenticatedUser);
+            String token = jwtUtil.generarToken(userDetails);
 
-            String rol = user.getRoleEntities().stream()
+            var rol = usuario.getRoleEntities().stream()
                     .findFirst()
-                    .map(role -> role.getType().name())
-                    .orElse("USER");
+                    .map(r -> r.getType().name())
+                    .orElse("CLIENTE");
 
-            Persona persona = user.getPersona();
-            Integer id = persona != null ? persona.getIdPersona() : user.getId();
-            String nombreCompleto = persona != null ? persona.getNombreCompleto() : user.getEmail();
+            var persona = usuario.getPersona();
+            var id = persona != null ? persona.getIdPersona() : usuario.getId();
+            var nombre = persona != null ? persona.getNombreCompleto() : usuario.getEmail();
 
-            var response = new LoginResponseDto(
+            var dto = new LoginResponseDto(
                     token,
-                    user.getEmail(),
+                    usuario.getEmail(),
                     rol,
                     id,
-                    nombreCompleto
+                    nombre
             );
 
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(dto);
 
-        } catch (AuthenticationException ex) {
+        } catch (AuthenticationException e) {
             throw new AutenticacionException("Credenciales invalidas");
         }
     }

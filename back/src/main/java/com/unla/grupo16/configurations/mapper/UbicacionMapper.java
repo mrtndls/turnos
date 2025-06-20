@@ -13,15 +13,13 @@ import com.unla.grupo16.models.entities.Ubicacion;
 public class UbicacionMapper {
 
     public UbicacionResponseDTO toDTO(Ubicacion ubicacion) {
-        UbicacionResponseDTO dto = new UbicacionResponseDTO();
-        dto.setId(ubicacion.getId());
-        dto.setDireccion(ubicacion.getDireccion());
-        dto.setLocalidad(
-                ubicacion.getLocalidad() != null
+        return new UbicacionResponseDTO(
+            ubicacion.getId(),
+            ubicacion.getDireccion(),
+            ubicacion.getLocalidad() != null
                 ? ubicacion.getLocalidad().getNombre()
                 : "Sin localidad"
         );
-        return dto;
     }
 
     public List<UbicacionResponseDTO> toDTOList(Set<Ubicacion> ubicaciones) {
@@ -30,3 +28,5 @@ public class UbicacionMapper {
                 .collect(Collectors.toList());
     }
 }
+
+// OK

@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -42,25 +43,6 @@ public class GlobalExceptionHandler {
         return construirResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    // Manejador para ClienteNoEncontradoException
-    @ExceptionHandler(ClienteNoEncontradoException.class)
-    public ResponseEntity<Map<String, Object>> manejarClienteNoEncontrado(ClienteNoEncontradoException ex) {
-        return construirResponse(HttpStatus.NOT_FOUND, ex.getMessage());
-    }
-
-    // Manejador para ClienteDuplicadoException
-    @ExceptionHandler(ClienteDuplicadoException.class)
-    public ResponseEntity<Map<String, Object>> manejarClienteDuplicado(ClienteDuplicadoException ex) {
-        return construirResponse(HttpStatus.CONFLICT, ex.getMessage());
-    }
-
-    // Manejador para BaseDeDatosException y ErrorInternoException
-    @ExceptionHandler({BaseDeDatosException.class, ErrorInternoException.class})
-    public ResponseEntity<Map<String, Object>> manejarErrorInterno(RuntimeException ex) {
-        // Para no filtrar el mensaje real en producción podrías poner un mensaje genérico
-        return construirResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno del servidor.");
-    }
-
     // Handler para IllegalArgumentException (por ejemplo en validaciones)
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> manejarIllegalArgument(IllegalArgumentException ex) {
@@ -82,4 +64,22 @@ public class GlobalExceptionHandler {
         body.put("mensaje", mensaje);
         return new ResponseEntity<>(body, status);
     }
+
+    // Manejador para errores de validación de DTOs (@Valid)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> manejarErroresDeValidacion(MethodArgumentNotValidException ex) {
+        Map<String, Object> errores = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error -> {
+            errores.put(error.getField(), error.getDefaultMessage());
+        });
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("estado", HttpStatus.BAD_REQUEST.value());
+        body.put("error", HttpStatus.BAD_REQUEST.getReasonPhrase());
+        body.put("mensajes", errores); // lista de campos con errores
+
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
 }

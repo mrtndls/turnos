@@ -1,5 +1,3 @@
-// src/pages/DashboardAdmin.tsx
-import React from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../../context/AuthContext";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
@@ -10,12 +8,12 @@ const DashboardAdmin = () => {
   const { user, logout } = useAuthContext();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+  const cerrarSesion = () => {
     logout();
     navigate("/login");
   };
 
-  const handleHome = () => {
+  const irAInicio = () => {
     navigate("/dashboard/admin/menu");
   };
 
@@ -27,21 +25,20 @@ const DashboardAdmin = () => {
         </h1>
         <div className="space-x-2">
           <button
-            onClick={handleHome}
+            onClick={irAInicio}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
           >
             Inicio
           </button>
           <button
-            onClick={handleLogout}
+            onClick={cerrarSesion}
             className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
           >
-            Cerrar sesión
+            Cerrar sesion
           </button>
         </div>
       </header>
 
-      {/* Sección donde se renderizan las subrutas como /dashboard/admin/menu */}
       <main>
         <Outlet />
       </main>

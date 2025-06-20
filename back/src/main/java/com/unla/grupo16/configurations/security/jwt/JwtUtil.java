@@ -22,80 +22,81 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtUtil {
 
-    // variables externas .properties
-    @Value("${jwt.secret}")
-    private String secret;
+    // clave para poder firmar el token 
+    @Value("${jwt.claveSecreta}")
+    private String claveSecreta;
 
-    @Value("${jwt.expiration}")
-    private long jwtExpirationInMs;
+    // tiempo de expiracion del token 
+    @Value("${jwt.tiempoExpiracion}")
+    private long tiempoExpiracion;
 
-    // genera una key segura validando tamaño minimo requerido para HS512
-    private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    // crea key segura basada en HS512
+    private Key crearClaveFirma() {
+        return Keys.hmacShaKeyFor(claveSecreta.getBytes(StandardCharsets.UTF_8));
     }
 
-    // agrega los roles dentro del token para acceder a ellos sin consultar a la bd
-    public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>(); // claims : datos del token
+    // crea un token jwt con los roles del usuario
+    public String generarToken(UserDetails userDetails) {
+        Map<String, Object> datosToken = new HashMap<>();
 
         List<String> roles = userDetails.getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
-        claims.put("roles", roles);
+        datosToken.put("roles", roles);
 
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(userDetails.getUsername()) //clave para identificar usuario
-                .setIssuedAt(new Date()) //controla vida del token
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs)) //controla vida del token
-                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .setClaims(datosToken)
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + tiempoExpiracion))
+                .signWith(crearClaveFirma(), SignatureAlgorithm.HS512)
                 .compact();
     }
 
-    // compara el usuario del token con el que tenemos (evita token robado)
-    // verifica que no haya expirado
-    public Boolean validateToken(String token, UserDetails userDetails) {
+    // valida q el token pertenezca al usuario y no haya expirado
+    public boolean validarToken(String token, UserDetails userDetails) {
         try {
-            final String username = getUsernameFromToken(token);
-            return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+            final String username = traerUsernameDesdeToken(token);
+            return username.equals(userDetails.getUsername()) && !tokenExpirado(token);
         } catch (Exception e) {
             return false;
         }
     }
 
-    // metodos para extraer datos del token (claims)
-    public String getUsernameFromToken(String token) {
-        return getClaimFromToken(token, Claims::getSubject);
+    // metodos para extraer datos del token 
+    public String traerUsernameDesdeToken(String token) {
+        return traerDatosDesdeToken(token, Claims::getSubject);
     }
 
-    public Date getExpirationDateFromToken(String token) {
-        return getClaimFromToken(token, Claims::getExpiration);
+    public Date traerFechaExpiracionDesdeToken(String token) {
+        return traerDatosDesdeToken(token, Claims::getExpiration);
     }
 
     // extraer roles del token
-    public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = getAllClaimsFromToken(token);
+    public <T> T traerDatosDesdeToken(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = traerTodosLosDatosDesdeToken(token);
         return claimsResolver.apply(claims);
     }
 
-    private Claims getAllClaimsFromToken(String token) {
+    private Claims traerTodosLosDatosDesdeToken(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+                .setSigningKey(crearClaveFirma())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
 
-    private Boolean isTokenExpired(String token) {
-        return getExpirationDateFromToken(token).before(new Date());
+    private boolean tokenExpirado(String token) {
+        return traerFechaExpiracionDesdeToken(token).before(new Date());
     }
 
-    public List<String> getRolesFromToken(String token) {
-        Claims claims = getAllClaimsFromToken(token);
-        List<?> rawRoles = claims.get("roles", List.class);
-        return rawRoles.stream()
+    // extraer roles del token
+    public List<String> traerRolesDesdeToken(String token) {
+        Claims claims = traerTodosLosDatosDesdeToken(token);
+        List<?> roles = claims.get("roles", List.class);
+        return roles.stream()
                 .map(Object::toString)
                 .collect(Collectors.toList());
     }

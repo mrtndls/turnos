@@ -1,19 +1,18 @@
-// src/components/MisTurnosList.tsx
 import React, { useEffect, useState } from "react";
-import { fetchMisTurnos } from "../api/clienteApi";
-import { TurnoResponseDTO } from "../types/turno";
+import { traerMisTurnos } from "../api/clienteApi";
+import { TurnoResponseDTO } from "../types/Turno";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 
 export default function MisTurnosList() {
-  useDocumentTitle("MisTurnosList");
+  useDocumentTitle("Mis Turnos");
 
   const [turnos, setTurnos] = useState<TurnoResponseDTO[]>([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchMisTurnos()
+    traerMisTurnos()
       .then(setTurnos)
-      .catch((err) => setError(err.message));
+      .catch((err) => setError(err.message || "Error al cargar turnos"));
   }, []);
 
   if (error) return <div style={{ color: "red" }}>Error: {error}</div>;
@@ -33,9 +32,9 @@ export default function MisTurnosList() {
         style={{
           width: "100%",
           borderCollapse: "collapse",
+          minWidth: "700px",
           fontFamily: "Arial, sans-serif",
           fontSize: "14px",
-          minWidth: "700px",
         }}
       >
         <thead>
@@ -46,7 +45,7 @@ export default function MisTurnosList() {
             <th style={headerCellStyle}>Fecha</th>
             <th style={headerCellStyle}>Hora</th>
             <th style={headerCellStyle}>Empleado</th>
-            <th style={headerCellStyle}>Código Anulación</th>
+            <th style={headerCellStyle}>Código de Anulación</th>
           </tr>
         </thead>
         <tbody>
@@ -55,21 +54,14 @@ export default function MisTurnosList() {
               key={turno.id}
               style={{
                 backgroundColor: index % 2 === 0 ? "#ffffff" : "#f9fafb",
-                cursor: "default",
               }}
             >
               <td style={bodyCellStyle}>{turno.id}</td>
-              <td style={bodyCellStyle}>
-                {turno.nombreServicio || "Sin servicio"}
-              </td>
-              <td style={bodyCellStyle}>
-                {turno.ubicacionDescripcion || "Sin ubicación"}
-              </td>
+              <td style={bodyCellStyle}>{turno.nombreServicio || "-"}</td>
+              <td style={bodyCellStyle}>{turno.ubicacionDescripcion || "-"}</td>
               <td style={bodyCellStyle}>{turno.fecha}</td>
               <td style={bodyCellStyle}>{turno.hora}</td>
-              <td style={bodyCellStyle}>
-                {turno.nombreEmpleado || "Sin empleado"}
-              </td>
+              <td style={bodyCellStyle}>{turno.nombreEmpleado || "-"}</td>
               <td style={bodyCellStyle}>{turno.codigoAnulacion || "-"}</td>
             </tr>
           ))}

@@ -1,10 +1,16 @@
-import axios, { AxiosInstance } from "axios";
-import { ClienteAdminDTO, ClientesAdminResponse } from "../types/cliente";
-import { TurnoResponseDTO } from "../types/turno";
+// src/api/AdminService.ts
 
+// Este servicio administra las peticiones al back que solo puede hacer un admin
+// Permite gestionar clientes y turnos desde el panel admin
+
+import axios, { AxiosInstance } from "axios";
+import { ClienteAdminDTO, ClientesAdminResponse } from "../types/Cliente";
+import { TurnoResponseDTO } from "../types/Turno";
+
+// url base para endpoint admin
 const API_BASE_ADMIN = "http://localhost:8080/api/admin";
 
-// configuración de instancia de Axios
+// instancia de Axios
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_BASE_ADMIN,
   timeout: 5000,
@@ -22,19 +28,20 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// FUNCIONES DEL ADMIN
 
-// obtener clientes activos e inactivos
-export const fetchClientes = async (): Promise<ClientesAdminResponse> => {
+// traer todos los clientes (activos / inactivos)
+export const traerClientes = async (): Promise<ClientesAdminResponse> => {
   const response = await axiosInstance.get("/clientes");
   return response.data;
 };
 
-// dar de baja lógica
+// soft delete cliente por ID
 export const darDeBajaCliente = async (id: number): Promise<void> => {
   await axiosInstance.put(`/${id}/baja`);
 };
 
-// dar de alta lógica
+// reactivar cliente por ID
 export const darDeAltaCliente = async (id: number): Promise<void> => {
   await axiosInstance.put(`/${id}/alta`);
 };
@@ -48,8 +55,8 @@ export const editarCliente = async (
   return response.data;
 };
 
-// obtener todos los turnos
-export const fetchAllTurnos = async (): Promise<TurnoResponseDTO[]> => {
+// traer todos los turnos registrados
+export const traerTodosLosTurnos = async (): Promise<TurnoResponseDTO[]> => {
   const response = await axiosInstance.get("/turnos");
   return response.data;
 };

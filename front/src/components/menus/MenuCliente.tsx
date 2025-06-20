@@ -1,7 +1,7 @@
-import React from "react";
 import MenuBase from "./MenuBase";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 
+// menu principal para cliente
 function MenuCliente() {
   useDocumentTitle("MenuCliente");
 

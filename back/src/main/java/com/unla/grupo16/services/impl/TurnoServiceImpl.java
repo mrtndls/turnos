@@ -7,30 +7,37 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 
+import com.unla.grupo16.configurations.mapper.ServicioMapper;
 import com.unla.grupo16.configurations.mapper.TurnoMapper;
+import com.unla.grupo16.configurations.mapper.UbicacionMapper;
 import com.unla.grupo16.exception.DisponibilidadNoEncontradaException;
 import com.unla.grupo16.exception.NegocioException;
 import com.unla.grupo16.exception.RecursoNoEncontradoException;
 import com.unla.grupo16.models.dtos.requests.TurnoRequestDTO;
 import com.unla.grupo16.models.dtos.responses.DisponibilidadResponseDTO;
+import com.unla.grupo16.models.dtos.responses.TurnoPreviewResponseDTO;
 import com.unla.grupo16.models.dtos.responses.TurnoResponseDTO;
 import com.unla.grupo16.models.entities.Cliente;
 import com.unla.grupo16.models.entities.Disponibilidad;
 import com.unla.grupo16.models.entities.Empleado;
 import com.unla.grupo16.models.entities.Servicio;
 import com.unla.grupo16.models.entities.Turno;
+import com.unla.grupo16.models.entities.Ubicacion;
 import com.unla.grupo16.repositories.IClienteRepository;
 import com.unla.grupo16.repositories.IDisponibilidadRepository;
 import com.unla.grupo16.repositories.IEmpleadoRepository;
 import com.unla.grupo16.repositories.IServicioRepository;
 import com.unla.grupo16.repositories.ITurnoRepository;
-import com.unla.grupo16.repositories.IUserRepository;
+import com.unla.grupo16.repositories.IUbicacionRepository;
 import com.unla.grupo16.services.interfaces.ITurnoService;
 
 import jakarta.mail.MessagingException;
@@ -43,8 +50,11 @@ public class TurnoServiceImpl implements ITurnoService {
     private final EmailServiceImpl emailService;
     private final IServicioRepository servicioRepository;
     private final IDisponibilidadRepository disponibilidadRepository;
-    private final IUserRepository usuarioRepository;
+    private final IUbicacionRepository ubicacionRepository;
+
     private final TurnoMapper turnoMapper;
+    private final ServicioMapper servicioMapper;
+    private final UbicacionMapper ubicacionMapper;
 
     public TurnoServiceImpl(ITurnoRepository turnoRepository,
             IClienteRepository clienteRepository,
@@ -52,77 +62,71 @@ public class TurnoServiceImpl implements ITurnoService {
             IServicioRepository servicioRepository,
             IDisponibilidadRepository disponibilidadRepository,
             EmailServiceImpl emailService,
-            IUserRepository usuarioRepository,
-            TurnoMapper turnoMapper) {
+            IUbicacionRepository ubicacionRepository,
+            TurnoMapper turnoMapper,
+            ServicioMapper servicioMapper,
+            UbicacionMapper ubicacionMapper) {
         this.turnoRepository = turnoRepository;
         this.empleadoRepository = empleadoRepository;
         this.servicioRepository = servicioRepository;
         this.disponibilidadRepository = disponibilidadRepository;
         this.emailService = emailService;
-        this.usuarioRepository = usuarioRepository;
+        this.ubicacionRepository = ubicacionRepository;
         this.turnoMapper = turnoMapper;
+        this.servicioMapper = servicioMapper;
+        this.ubicacionMapper = ubicacionMapper;
     }
 
     @Override
-    public TurnoResponseDTO crearTurno(TurnoRequestDTO dto, Cliente cliente, String username) throws NegocioException {
-        validarTurnoRequest(dto);
-
-        Servicio servicio = servicioRepository.findById(dto.getIdServicio())
+    public TurnoPreviewResponseDTO generarPreview(TurnoRequestDTO dto) {
+        Servicio servicio = servicioRepository.findById(dto.idServicio())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Servicio no encontrado"));
 
-        LocalDateTime fechaHora = LocalDateTime.of(dto.getFecha(), dto.getHora());
+        Ubicacion ubicacion = ubicacionRepository.findById(dto.idUbicacion())
+                .orElseThrow(() -> new RecursoNoEncontradoException("Ubicacion no encontrada"));
 
-        // Validación: no permitir turnos en el pasado
-        LocalDateTime ahora = LocalDateTime.now().withSecond(0).withNano(0);
-        if (fechaHora.isBefore(ahora)) {
-            throw new NegocioException("No se pueden reservar turnos en fechas u horarios pasados.");
-        }
-
-        // Buscar un empleado disponible
-        Empleado empleadoAsignado = empleadoRepository.findAll().stream()
-                .filter(emp -> !turnoRepository.existsByEmpleadoAndFechaHoraAndDisponibleFalse(emp, fechaHora))
-                .findFirst()
-                .orElseThrow(() -> new DisponibilidadNoEncontradaException("No hay empleados disponibles para la fecha y hora"));
-
-        // Crear y persistir el turno
-        Turno turno = turnoMapper.toEntity(dto);
-        turno.setCliente(cliente);
-        turno.setEmpleado(empleadoAsignado);
-        turno.setServicio(servicio);
-        turno.setFechaHora(fechaHora);
-        turno.setDisponible(false);
-        turno.setCodigoAnulacion(UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-
-        turnoRepository.save(turno);
-
-        // Enviar correo de confirmacion
-        enviarEmailConfirmacion(username, turno);
-
-        return turnoMapper.toDTO(turno);
-    }
-
-    private void validarTurnoRequest(TurnoRequestDTO dto) throws NegocioException {
-        if (dto.getIdServicio() == null) {
-            throw new NegocioException("El idServicio es obligatorio");
-        }
-        if (dto.getFecha() == null) {
-            throw new NegocioException("La fecha es obligatoria");
-        }
-        if (dto.getHora() == null) {
-            throw new NegocioException("La hora es obligatoria");
-        }
-    }
-
-    private void enviarEmailConfirmacion(String emailCliente, Turno turno) throws NegocioException {
-        try {
-            emailService.sendEmail(emailCliente, turno); // ahora toda la lógica y armado de template está del lado del service
-        } catch (MessagingException e) {
-            throw new NegocioException("Error al enviar email de confirmación: " + e.getMessage());
-        }
+        return new TurnoPreviewResponseDTO(
+                servicioMapper.toDTO(servicio),
+                ubicacionMapper.toDTO(ubicacion),
+                dto.fecha(),
+                dto.hora()
+        );
     }
 
     @Override
-    public List<String> getHorariosDisponibles(Integer servicioId, LocalDate fecha) {
+    public List<TurnoResponseDTO> obtenerTurnosPorCliente(Integer clienteId) {
+        List<Turno> turnos = turnoRepository.findByClienteIdAndDisponibleFalse(clienteId); // solo los turnos reservados
+        return turnos.stream()
+                .map(turnoMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    // --------------------------------------------------------------------
+    // OK
+    // CLIENTE
+    // metodo para return una lista de fechas LocalDate de los prox 30dias en los q un servicio tiene disponibilidad habilitada y con horarios libres
+    @Override
+    public List<LocalDate> traerDiasDisponiblesParaServicio(Servicio servicio) {
+
+        // busca disp q tengan el serv. de c/u extrae el diaSemana en donde esta Activa
+        Set<DayOfWeek> diasDisponibles = disponibilidadRepository.findByServiciosContaining(servicio).stream()
+                .map(Disponibilidad::getDiaSemana) // getDiaSemana debe devolver DayOfWeek
+                .collect(Collectors.toSet());
+
+        LocalDate hoy = LocalDate.now();
+        LocalDate fin = hoy.plusDays(30);
+
+        // filtro : dia semana disponible, horario disponible
+        List<LocalDate> fechasFiltradas = hoy.datesUntil(fin.plusDays(1))
+                .filter(dia -> diasDisponibles.contains(dia.getDayOfWeek())) // Filtra solo los días habilitados
+                .filter(dia -> !traerHorariosDisponiblesParaServicio(servicio.getId(), dia).isEmpty()) // Verifica que haya horarios disponibles
+                .collect(Collectors.toList());
+
+        return fechasFiltradas;
+    }
+
+    @Override
+    public List<String> traerHorariosDisponiblesParaServicio(Integer servicioId, LocalDate fecha) {
         validarEntrada(servicioId, fecha);
 
         if (fecha.isBefore(LocalDate.now())) {
@@ -173,10 +177,66 @@ public class TurnoServiceImpl implements ITurnoService {
     }
 
     @Override
-    public List<TurnoResponseDTO> traerTodos() {
-        return turnoRepository.findAll().stream()
-                .map(turnoMapper::toDTO)
-                .collect(Collectors.toList());
+    public TurnoResponseDTO crearTurno(TurnoRequestDTO dto, Cliente cliente, String username) {
+        validarTurnoRequest(dto);
+
+        Servicio servicio = servicioRepository.findById(dto.idServicio())
+                .orElseThrow(() -> new RecursoNoEncontradoException("Servicio no encontrado"));
+
+        LocalDateTime fechaHora = LocalDateTime.of(dto.fecha(), dto.hora());
+
+        if (fechaHora.isBefore(LocalDateTime.now().withSecond(0).withNano(0))) {
+            throw new NegocioException("No se pueden reservar turnos en el pasado");
+        }
+
+        Empleado empleado = buscarEmpleadoDisponible(fechaHora)
+                .orElseThrow(() -> new DisponibilidadNoEncontradaException("No hay empleados disponibles para esa fecha y hora"));
+
+        Turno turno = crearTurnoDesdeDTO(dto, cliente, servicio, empleado, fechaHora);
+
+        turnoRepository.save(turno);
+
+        enviarEmailConfirmacion(username, turno);
+
+        return turnoMapper.toDTO(turno);
+    }
+
+    private void validarTurnoRequest(TurnoRequestDTO dto) throws NegocioException {
+        if (dto.idServicio() == null) {
+            throw new NegocioException("El idServicio es obligatorio");
+        }
+        if (dto.fecha() == null) {
+            throw new NegocioException("La fecha es obligatoria");
+        }
+        if (dto.hora() == null) {
+            throw new NegocioException("La hora es obligatoria");
+        }
+    }
+
+    private Optional<Empleado> buscarEmpleadoDisponible(LocalDateTime fechaHora) {
+        return empleadoRepository.findAll().stream()
+                .filter(emp -> !turnoRepository.existsByEmpleadoAndFechaHoraAndDisponibleFalse(emp, fechaHora))
+                .findFirst();
+    }
+
+    private Turno crearTurnoDesdeDTO(TurnoRequestDTO dto, Cliente cliente, Servicio servicio,
+            Empleado empleado, LocalDateTime fechaHora) {
+        Turno turno = turnoMapper.toEntity(dto);
+        turno.setCliente(cliente);
+        turno.setEmpleado(empleado);
+        turno.setServicio(servicio);
+        turno.setFechaHora(fechaHora);
+        turno.setDisponible(false);
+        turno.setCodigoAnulacion(UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        return turno;
+    }
+
+    private void enviarEmailConfirmacion(String emailCliente, Turno turno) throws NegocioException {
+        try {
+            emailService.sendEmail(emailCliente, turno);
+        } catch (MessagingException e) {
+            throw new NegocioException("Error al enviar email de confirmacion: " + e.getMessage());
+        }
     }
 
     @Override
@@ -192,89 +252,57 @@ public class TurnoServiceImpl implements ITurnoService {
             throw new NegocioException("El turno ya fue anulado o ya esta disponible.");
         }
 
-        turno.setDisponible(true); // Se vuelve a marcar como disponible
+        turno.setEmpleado(null);
+        turno.setDisponible(true); 
+        turno.setCliente(null);
+        turno.setCodigoAnulacion(null);
+
         turnoRepository.save(turno);
     }
 
-    // Solo se devuelven los turnos que están reservados (disponible = false), es decir, activos para el cliente.
     @Override
-    public List<TurnoResponseDTO> obtenerTurnosPorCliente(Integer clienteId) {
-        List<Turno> turnos = turnoRepository.findByClienteIdAndDisponibleFalse(clienteId); // solo los turnos reservados
-        return turnos.stream()
-                .map(turnoMapper::toDTO)
-                .collect(Collectors.toList());
-    }
+    public DisponibilidadResponseDTO traerDisponibilidadPorDiaYServicio(LocalDate fecha, Integer servicioId) {
 
-    @Override
-    public List<TurnoResponseDTO> traerSoloTurnosReservados() {
-        List<Turno> turnos = turnoRepository.findByDisponibleFalseOrderByFechaHoraAsc();
-        return turnos.stream()
-                .map(turnoMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public DisponibilidadResponseDTO obtenerDisponibilidadPorDiaYServicio(LocalDate fecha, Integer servicioId) {
         DayOfWeek diaSemana = fecha.getDayOfWeek();
+        LocalDate hoy = LocalDate.now();
+        LocalTime ahora = LocalTime.now().withSecond(0).withNano(0);
 
-        // Buscar disponibilidades para el día y servicio
+        // tra disp por dia y serv
         List<Disponibilidad> disponibilidades = disponibilidadRepository.findByDiaSemanaAndServiciosId(diaSemana, servicioId);
 
-        // Verificar si la fecha está dentro del rango permitido (por ej, no días pasados)
-        boolean activo = !disponibilidades.isEmpty() && !fecha.isBefore(LocalDate.now());
+        // verificar dia activo 
+        boolean activo = !disponibilidades.isEmpty() && !fecha.isBefore(hoy);
 
-        // Hora actual solo si la fecha es hoy
-        LocalTime ahora = fecha.isEqual(LocalDate.now()) ? LocalTime.now() : null;
-
-        // Construir lista de horarios filtrando por hora actual si es hoy
-        List<DisponibilidadResponseDTO.HorarioDTO> horarios = disponibilidades.stream()
+        // filtra horarios pasados
+        Stream<Disponibilidad> stream = disponibilidades.stream();
+        if (fecha.isEqual(hoy)) {
+            stream = stream.filter(d -> d.getHoraFin().isAfter(ahora));
+        }
+        // mapear horarios, ajustando horaInicio si corresponde
+        List<DisponibilidadResponseDTO.HorarioDTO> horarios = stream
                 .map(d -> {
-                    if (ahora != null) {
-                        // Si el horario termina antes que ahora, descartarlo
-                        if (d.getHoraFin().isBefore(ahora) || d.getHoraFin().equals(ahora)) {
-                            return null;
-                        }
-                        // Si el horario empieza antes que ahora, ajustar inicio a ahora
-                        if (d.getHoraInicio().isBefore(ahora)) {
-                            return new DisponibilidadResponseDTO.HorarioDTO(ahora.withSecond(0).withNano(0), d.getHoraFin());
-                        }
+                    LocalTime inicio = d.getHoraInicio();
+                    LocalTime fin = d.getHoraFin();
+
+                    if (fecha.isEqual(hoy) && inicio.isBefore(ahora)) {
+                        inicio = ahora;
                     }
-                    return new DisponibilidadResponseDTO.HorarioDTO(d.getHoraInicio(), d.getHoraFin());
+
+                    // Validar que el rango sea correcto
+                    return inicio.isBefore(fin) || inicio.equals(fin)
+                            ? new DisponibilidadResponseDTO.HorarioDTO(inicio, fin)
+                            : null;
                 })
-                .filter(horario -> horario != null && !horario.getHoraInicio().isAfter(horario.getHoraFin()))
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        return DisponibilidadResponseDTO.builder()
-                .fecha(fecha)
-                .activo(activo)
-                .horarios(horarios)
-                .build();
+        // 5. Armar respuesta
+        return new DisponibilidadResponseDTO(fecha, activo, horarios);
+
     }
 
     @Override
-    public List<LocalDate> obtenerDiasDisponiblesParaServicio(Servicio servicio) {
-        // Obtener los días de la semana disponibles como valores de tipo tinyint
-        Set<DayOfWeek> diasDisponibles = disponibilidadRepository.findByServiciosContaining(servicio).stream()
-                .map(Disponibilidad::getDiaSemana) // getDiaSemana debe devolver DayOfWeek
-                .collect(Collectors.toSet());
-
-        LocalDate hoy = LocalDate.now();
-        LocalDate fin = hoy.plusDays(30);
-
-        // Filtrar los días que son habilitados para el servicio y que tienen horarios disponibles
-        List<LocalDate> fechasFiltradas = hoy.datesUntil(fin.plusDays(1))
-                .filter(dia -> diasDisponibles.contains(dia.getDayOfWeek())) // Filtra solo los días habilitados
-                //.peek(d -> System.out.println("Pasa filtro día activo: " + d))
-                .filter(dia -> !getHorariosDisponibles(servicio.getId(), dia).isEmpty()) // Verifica que haya horarios disponibles
-                //.peek(d -> System.out.println("Día con horario disponible: " + d))
-                .collect(Collectors.toList());
-
-        // Devolver las fechas filtradas
-        return fechasFiltradas;
-    }
-
-    @Override
-    public List<String> obtenerFechasHabilitadasPorMes(Servicio servicio, int year, int month) {
+    public List<String> traerFechasHabilitadasPorMes(Servicio servicio, int year, int month) {
         // Fecha de inicio: primer día del mes y año dados
         LocalDate inicio = LocalDate.of(year, month, 1);
 
@@ -282,7 +310,7 @@ public class TurnoServiceImpl implements ITurnoService {
         LocalDate fin = inicio.withDayOfMonth(inicio.lengthOfMonth());
 
         // Obtener todas las fechas disponibles para ese servicio (ejemplo: método existente que devuelve List<LocalDate>)
-        List<LocalDate> fechasDisponibles = obtenerDiasDisponiblesParaServicio(servicio).stream()
+        List<LocalDate> fechasDisponibles = traerDiasDisponiblesParaServicio(servicio).stream()
                 // Filtrar fechas dentro del rango del mes consultado
                 .filter(dia -> !dia.isBefore(inicio) && !dia.isAfter(fin))
                 .collect(Collectors.toList());
@@ -293,13 +321,10 @@ public class TurnoServiceImpl implements ITurnoService {
                 .collect(Collectors.toList());
     }
 
+    // --------------------------------------------------------------------------------
+    // ADMIN
     @Override
     public List<Turno> obtenerTurnosNoDisponibles() {
         return turnoRepository.findByDisponibleFalseOrderByFechaHoraAsc();
-    }
-
-    @Override
-    public List<Turno> findAll() {
-        return turnoRepository.findAll();
     }
 }

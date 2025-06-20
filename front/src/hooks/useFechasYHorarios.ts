@@ -1,30 +1,23 @@
 import { useState, useEffect, useCallback } from "react";
+import { DisponibilidadResponse, Horario } from "../types/Disponibilidades";
 
-interface Horario {
-  horaInicio: string;
-  horaFin: string;
-}
-
-interface DisponibilidadResponse {
-  fecha: string;
-  activo: boolean;
-  horarios: Horario[];
-}
-
+// hook q maneja fechas y horarios disp para un servicio
 function useFechasYHorarios(servicioId: number) {
   const [fechasHabilitadas, setFechasHabilitadas] = useState<string[]>([]);
   const [horarios, setHorarios] = useState<string[]>([]);
 
-  // 'hoy' a medianoche
+  // referencia de hoy sin hora
   const hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
 
+  // convierte fecha a string con formato yyyy-mm-dd considera zona horaria local
   const toLocalDateString = (date: Date): string => {
     const offset = date.getTimezoneOffset();
     const localDate = new Date(date.getTime() - offset * 60 * 1000);
     return localDate.toISOString().split("T")[0];
   };
 
+  // carga las fecha con disp para un mes determinado
   const cargarFechasHabilitadas = useCallback(
     async (date: Date) => {
       const year = date.getFullYear();
@@ -48,13 +41,14 @@ function useFechasYHorarios(servicioId: number) {
         const data: string[] = await response.json();
         setFechasHabilitadas(data);
       } catch (error) {
-        console.error("Error cargando fechas habilitadas:", error);
+        console.error("Error al cargar fechas disponibles:", error);
         setFechasHabilitadas([]);
       }
     },
     [servicioId]
   );
 
+  // carga los horarios disp para una fecha seleccionada
   const cargarHorarios = useCallback(
     async (fechaISO: string) => {
       const token = localStorage.getItem("token") || "";
@@ -70,7 +64,7 @@ function useFechasYHorarios(servicioId: number) {
           }
         );
 
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok) throw new Error(`Error http!!  ${response.status}`);
 
         const data: DisponibilidadResponse = await response.json();
 
@@ -91,7 +85,8 @@ function useFechasYHorarios(servicioId: number) {
     [servicioId]
   );
 
-  const isDateEnabled = (date: Date) => {
+  
+  const fechaHabilitada = (date: Date) => {
     const isoDate = toLocalDateString(date);
     return fechasHabilitadas.includes(isoDate) && date.getTime() >= hoy.getTime();
   };
@@ -101,7 +96,7 @@ function useFechasYHorarios(servicioId: number) {
     horarios,
     cargarFechasHabilitadas,
     cargarHorarios,
-    isDateEnabled,
+    fechaHabilitada,
     toLocalDateString,
   };
 }

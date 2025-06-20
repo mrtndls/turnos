@@ -9,23 +9,23 @@ interface CrearTurnoParams {
 }
 
 export default function useCrearTurno() {
-  const [loading, setLoading] = useState(false);
+  const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const crearTurno = async (params: CrearTurnoParams) => {
-    setLoading(true);
+  const crearTurno = async (datos: CrearTurnoParams) => {
+    setCargando(true);
     setError(null);
 
     try {
-      const turno = await apiCrearTurno(params);
-      setLoading(false);
+      const turno = await apiCrearTurno(datos);
       return turno;
-    } catch (err: any) {
-      setLoading(false);
-      setError(err.message || "Error al crear turno");
-      throw err;
+    } catch (e: any) {
+      setError(e.message || "No se pudo crear el turno");
+      throw e;
+    } finally {
+      setCargando(false);
     }
   };
 
-  return { crearTurno, loading, error };
+  return { crearTurno, cargando, error };
 }

@@ -1,19 +1,12 @@
 package com.unla.grupo16.models.dtos.responses;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+public record ServicioResponseDTO(
+        Integer id,
+        String nombre,
+        String descripcion,
+        int duracion
+        ) {
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class ServicioResponseDTO {
-  private Integer id;
-  private String nombre;
-  private String descripcion;
-  private int duracion;
 }
+
+// OK

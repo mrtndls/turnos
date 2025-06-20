@@ -1,5 +1,6 @@
 package com.unla.grupo16.exception;
 
+// AUTH
 public class UsuarioDeshabilitadoException extends NegocioException {
 
     public UsuarioDeshabilitadoException() {

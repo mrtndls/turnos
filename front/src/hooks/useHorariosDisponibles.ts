@@ -1,34 +1,34 @@
 import { useState, useEffect } from "react";
-import { fetchHorariosDisponibles } from "../api/clienteApi";
+import { traerHorariosDisponibles } from "../api/clienteApi";
 
 export default function useHorariosDisponibles(servicioId: number, fecha: string) {
   const [horarios, setHorarios] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!servicioId || !fecha) {
       setHorarios([]);
-      setLoading(false);
+      setCargando(false);
       return;
     }
 
-    setLoading(true);
+    setCargando(true);
     setError(null);
 
-    const loadHorarios = async () => {
+    const cargarHorarios = async () => {
       try {
-        const data = await fetchHorariosDisponibles(servicioId, fecha);
+        const data = await traerHorariosDisponibles(servicioId, fecha);
         setHorarios(data);
       } catch (err: any) {
-        setError(err.message || "Error cargando horarios disponibles");
+        setError(err.message || "Error al cargar los horarios");
       } finally {
-        setLoading(false);
+        setCargando(false);
       }
     };
 
-    loadHorarios();
+    cargarHorarios();
   }, [servicioId, fecha]);
 
-  return { horarios, loading, error };
+  return { horarios, cargando, error };
 }

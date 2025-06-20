@@ -13,11 +13,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+// maneja los errores de usuario no autenticado 401
 @Component
-public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
+public class ErrorAutenticacion implements AuthenticationEntryPoint {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
+    // se ejecuta cuando quiero acceder a  un recurso protegido sin autenticacion
     @Override
     public void commence(HttpServletRequest request,
             HttpServletResponse response,
@@ -25,16 +27,16 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
             throws IOException {
 
         Map<String, Object> body = Map.of(
-                "timestamp", LocalDateTime.now().toString(),
+                "fechaHora", LocalDateTime.now().toString(),
                 "estado", HttpServletResponse.SC_UNAUTHORIZED,
-                "error", "Unauthorized",
+                "error", "No autorizado",
                 "mensaje", "No autorizado o token invalido"
         );
 
+        // json de rta al cliente
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-
         response.getWriter().write(mapper.writeValueAsString(body));
     }
 }

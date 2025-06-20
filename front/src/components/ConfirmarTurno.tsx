@@ -1,6 +1,4 @@
-import React from "react";
-import { ServicioResponseDTO, UbicacionResponseDTO } from "../types/turno";
-import useDocumentTitle from "../hooks/useDocumentTitle";
+import { ServicioResponseDTO, UbicacionResponseDTO } from "../types/Turno";
 import useCrearTurno from "../hooks/useCrearTurno";
 
 interface Props {
@@ -12,7 +10,7 @@ interface Props {
   onConfirmar: () => void;
 }
 
-function ConfirmarTurno({
+export default function ConfirmarTurno({
   servicio,
   ubicacion,
   fecha,
@@ -20,10 +18,9 @@ function ConfirmarTurno({
   onVolver,
   onConfirmar,
 }: Props) {
-  useDocumentTitle("ConfirmarTurno");
-  const { crearTurno, loading, error } = useCrearTurno();
+  const { crearTurno, cargando, error } = useCrearTurno();
 
-  const handleConfirmar = async () => {
+  const confirmar = async () => {
     try {
       const turno = await crearTurno({
         idServicio: servicio.id,
@@ -31,29 +28,46 @@ function ConfirmarTurno({
         fecha,
         hora,
       });
-      alert(`Turno reservado con codigo: ${turno.codigoAnulacion}`);
+      alert(`Turno reservado. Código de anulación: ${turno.codigoAnulacion}`);
       onConfirmar();
     } catch {
-      alert(error || "No se pudo reservar el turno");
+      alert(error || "Error al reservar el turno.");
     }
   };
 
   return (
     <div>
       <h3>Confirmar turno</h3>
-      <p>Servicio: {servicio.nombre}</p>
-      <p>Ubicacion: {ubicacion.direccion}</p>
-      <p>Fecha: {fecha.split("-").reverse().join("/")}</p>
-      <p>Hora: {hora}</p>
-      <button onClick={handleConfirmar} disabled={loading}>
-        {loading ? "Confirmando..." : "Confirmar"}
+      <p>
+        <strong>Servicio:</strong> {servicio.nombre}
+      </p>
+      <p>
+        <strong>Ubicación:</strong> {ubicacion.direccion}
+      </p>
+      <p>
+        <strong>Fecha:</strong> {formatearFecha(fecha)}
+      </p>
+      <p>
+        <strong>Hora:</strong> {hora}
+      </p>
+
+      <button onClick={confirmar} disabled={cargando}>
+        {cargando ? "Confirmando..." : "Confirmar"}
       </button>
-      <button onClick={onVolver} disabled={loading}>
+      <button
+        onClick={onVolver}
+        disabled={cargando}
+        style={{ marginLeft: "1rem" }}
+      >
         Volver
       </button>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      {error && <p style={{ color: "red", marginTop: "1rem" }}>{error}</p>}
     </div>
   );
 }
 
-export default ConfirmarTurno;
+function formatearFecha(fecha: string): string {
+  // cambia "anio-mes-dia" a "dia/mes/anio"
+  return fecha.split("-").reverse().join("/");
+}

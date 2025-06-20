@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+// lista de clientes con logica de edicion, baja y alta
+
+import { useState } from "react";
 import ClienteAdminList from "../components/ClienteAdminList";
-import { useClientes } from "../hooks/useClientes";
-import { ClienteAdminDTO } from "../types/cliente";
 import FormularioEdicionCliente from "../components/FormularioEdicionCliente";
+import { useClientes } from "../hooks/useClientes";
+import { ClienteAdminDTO } from "../types/Cliente";
 
 const ClienteAdminListWrapper = () => {
   const {
@@ -18,16 +20,16 @@ const ClienteAdminListWrapper = () => {
 
   if (loadingClientes) return <p>Cargando clientes...</p>;
 
-  const onEditar = (cliente: ClienteAdminDTO) => {
-    setClienteEditando(cliente); // abrir formulario edición
+  const abrirEdicion = (cliente: ClienteAdminDTO) => {
+    setClienteEditando(cliente);
   };
 
-  const onGuardarEdicion = async (clienteEditado: ClienteAdminDTO) => {
+  const guardarEdicion = async (clienteEditado: ClienteAdminDTO) => {
     await handleEditarCliente(clienteEditado);
-    setClienteEditando(null); // cerrar formulario
+    setClienteEditando(null);
   };
 
-  const onCancelarEdicion = () => {
+  const cancelarEdicion = () => {
     setClienteEditando(null);
   };
 
@@ -38,14 +40,14 @@ const ClienteAdminListWrapper = () => {
         dadosDeBaja={clientes.dadosDeBaja}
         onDarDeBaja={handleDarDeBaja}
         onDarDeAlta={handleDarDeAlta}
-        onEditar={onEditar}
+        onEditar={abrirEdicion}
       />
 
       {clienteEditando && (
         <FormularioEdicionCliente
           cliente={clienteEditando}
-          onGuardar={onGuardarEdicion}
-          onCancelar={onCancelarEdicion}
+          onGuardar={guardarEdicion}
+          onCancelar={cancelarEdicion}
         />
       )}
     </>
