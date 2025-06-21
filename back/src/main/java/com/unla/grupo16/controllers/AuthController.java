@@ -51,6 +51,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
         try {
+            // spring sec autentica al usuario
             var auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.email(),
@@ -58,26 +59,33 @@ public class AuthController {
                     )
             );
 
+            // reacupera los datos del usuario autenticado
             var userDetails = (UserDetails) auth.getPrincipal();
 
+            // lo busca en la bd por persona 
             UserEntity usuario = userRepo.findByEmailWithPersona(userDetails.getUsername())
                     .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
 
+            // no deja login si usuario no esta activo
             if (!usuario.isEnabled()) {
                 throw new UsuarioDeshabilitadoException("El usuario esta deshabilitado");
             }
 
+            // crea token con datos del usuario
             String token = jwtUtil.generarToken(userDetails);
 
+            // pasa RoleType.ADMIN a ADMIN
             var rol = usuario.getRoleEntities().stream()
                     .findFirst()
                     .map(r -> r.getType().name())
                     .orElse("CLIENTE");
 
+            // si hay persona usa su id, sino usa id de usuario
             var persona = usuario.getPersona();
             var id = persona != null ? persona.getIdPersona() : usuario.getId();
             var nombre = persona != null ? persona.getNombreCompleto() : usuario.getEmail();
 
+            // respuesta
             var dto = new LoginResponseDto(
                     token,
                     usuario.getEmail(),

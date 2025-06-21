@@ -15,7 +15,7 @@ import com.unla.grupo16.repositories.IRoleRepository;
 import com.unla.grupo16.repositories.IUserRepository;
 
 @Component
-public class UsersSeeder implements CommandLineRunner {
+public class CrearUsuarios implements CommandLineRunner {
 
     private static final String PASSWORD_GENERIC = "pw1234";
 
@@ -24,7 +24,7 @@ public class UsersSeeder implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final IClienteRepository clienteRepository;
 
-    public UsersSeeder(IUserRepository userRepository,
+    public CrearUsuarios(IUserRepository userRepository,
             IRoleRepository roleRepository,
             PasswordEncoder passwordEncoder,
             IClienteRepository clienteRepository) {
@@ -36,44 +36,43 @@ public class UsersSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        createRolesIfNotExist();
-        createUsersIfNotExist();
+        crearRolesSiNoExisten();
+        crearUsuariosSiNoExisten();
     }
 
-    private void createRolesIfNotExist() {
+    private void crearRolesSiNoExisten() {
         if (roleRepository.count() == 0) {
-            roleRepository.save(buildRole(RoleType.CLIENTE));   // Cliente
-            roleRepository.save(buildRole(RoleType.ADMIN));  // Admin
+            roleRepository.save(crearRol(RoleType.CLIENTE));
+            roleRepository.save(crearRol(RoleType.ADMIN));
         }
     }
 
-    private void createUsersIfNotExist() {
+    private void crearUsuariosSiNoExisten() {
         if (userRepository.count() == 0) {
-            createAdminUser("admin@gmail.com", PASSWORD_GENERIC);
-            createClientUser("cliente@hotmail.com", PASSWORD_GENERIC);
+            crearUsuarioAdmin("admin@gmail.com", PASSWORD_GENERIC);
+            crearUsuarioCliente("cliente@hotmail.com", PASSWORD_GENERIC);
         }
     }
 
-    private void createAdminUser(String email, String password) {
+    private void crearUsuarioAdmin(String email, String password) {
         UserEntity admin = UserEntity.builder()
                 .email(email)
                 .activo(true)
                 .password(passwordEncoder.encode(password))
                 .roleEntities(Set.of(roleRepository.findByType(RoleType.ADMIN).orElseThrow(()
-                        -> new RuntimeException("Role ADMIN no encontrado"))))
+                        -> new RuntimeException("Rol ADMIN no encontrado"))))
                 .build();
         System.out.println("\n\n**ADMIN**\nusername: " + email + "\npassword:" + password);
         userRepository.save(admin);
     }
 
-    private void createClientUser(String email, String password) {
+    private void crearUsuarioCliente(String email, String password) {
         Cliente cliente = new Cliente();
         cliente.setNombre("Martin");
         cliente.setApellido("Diale");
         cliente.setDni("4123");
         cliente.setCuil("20-4123-9");
 
-        // Persisto primero el cliente para que tenga ID y sea "managed"
         clienteRepository.save(cliente);
 
         UserEntity client = UserEntity.builder()
@@ -81,14 +80,14 @@ public class UsersSeeder implements CommandLineRunner {
                 .activo(true)
                 .password(passwordEncoder.encode(password))
                 .roleEntities(Set.of(roleRepository.findByType(RoleType.CLIENTE).orElseThrow(()
-                        -> new RuntimeException("Role CLIENTE no encontrado"))))
+                        -> new RuntimeException("Rol CLIENTE no encontrado"))))
                 .persona(cliente) // Cliente ya guardado y persistente
                 .build();
         System.out.println("\n\n**CLIENTE**\nusername: " + email + "\npassword:" + password + "\n");
         userRepository.save(client);
     }
 
-    private RoleEntity buildRole(RoleType roleType) {
+    private RoleEntity crearRol(RoleType roleType) {
         return RoleEntity.builder()
                 .type(roleType)
                 .build();

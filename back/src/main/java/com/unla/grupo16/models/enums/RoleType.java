@@ -6,6 +6,6 @@ public enum RoleType {
     CLIENTE;
 
     public String getPrefixedName() {
-        return "ROLE_" + this.name();
+        return "ROL_" + this.name();
     }
 }

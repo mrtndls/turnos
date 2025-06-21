@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -108,37 +107,44 @@ public class TurnoServiceImpl implements ITurnoService {
     @Override
     public List<LocalDate> traerDiasDisponiblesParaServicio(Servicio servicio) {
 
-        // busca disp q tengan el serv. de c/u extrae el diaSemana en donde esta Activa
+        // obtiene los dias de la semana con disp para ese serv
+        // set para evitar duplicados(varias disp el mismo dia)
         Set<DayOfWeek> diasDisponibles = disponibilidadRepository.findByServiciosContaining(servicio).stream()
-                .map(Disponibilidad::getDiaSemana) // getDiaSemana debe devolver DayOfWeek
+                .map(Disponibilidad::getDiaSemana)
                 .collect(Collectors.toSet());
 
+        // rango de fechas
         LocalDate hoy = LocalDate.now();
         LocalDate fin = hoy.plusDays(30);
 
-        // filtro : dia semana disponible, horario disponible
-        List<LocalDate> fechasFiltradas = hoy.datesUntil(fin.plusDays(1))
-                .filter(dia -> diasDisponibles.contains(dia.getDayOfWeek())) // Filtra solo los días habilitados
-                .filter(dia -> !traerHorariosDisponiblesParaServicio(servicio.getId(), dia).isEmpty()) // Verifica que haya horarios disponibles
-                .collect(Collectors.toList());
-
-        return fechasFiltradas;
+        // filtra fechas
+        return hoy.datesUntil(fin.plusDays(1)) // stren localdate desde hoy hasta fin + 1 = 30
+                .filter(fecha -> diasDisponibles.contains(fecha.getDayOfWeek())) // fltra dias disp
+                .filter(fecha -> !traerHorariosDisponiblesParaServicio(servicio.getId(), fecha).isEmpty()) // filtra horarios para ese dia 
+                .toList();
     }
 
     @Override
+    // devuelve una lista de horarios disp como string para un serv en una fecha especifica, teniendo en cuanta la disp y turnos reservados
     public List<String> traerHorariosDisponiblesParaServicio(Integer servicioId, LocalDate fecha) {
+
+        // valida q id y fecha no sean null
         validarEntrada(servicioId, fecha);
 
+        // si la fecha es anterior a hoy, devuelve lista vacia
         if (fecha.isBefore(LocalDate.now())) {
-            return Collections.emptyList(); // O lanzar excepción, según prefieras
+            return List.of();
         }
 
+        // obtener las disp para ese dia de la semana
         DayOfWeek dia = fecha.getDayOfWeek();
+
         List<Disponibilidad> disponibilidades = disponibilidadRepository.findByServicios_IdAndDiaSemana(servicioId, dia);
 
-        List<String> todosHorarios = disponibilidades.stream()
-                .flatMap(disp -> generarHorarios(disp.getHoraInicio(), disp.getHoraFin()).stream())
-                .collect(Collectors.toList());
+        // cada disp tiene un rango horario, genero todos los horarios por cada disp 
+        List<LocalTime> horariosGenerados = disponibilidades.stream()
+                .flatMap(d -> generarHorarios(d.getHoraInicio(), d.getHoraFin()).stream())
+                .toList();
 
         Set<String> horariosOcupados = turnoRepository.findByServicioIdAndFecha(servicioId, fecha.atStartOfDay(), fecha.plusDays(1).atStartOfDay())
                 .stream()
@@ -147,15 +153,11 @@ public class TurnoServiceImpl implements ITurnoService {
 
         LocalTime ahora = fecha.equals(LocalDate.now()) ? LocalTime.now().withSecond(0).withNano(0) : null;
 
-        return todosHorarios.stream()
-                .filter(h -> !horariosOcupados.contains(h))
-                .filter(h -> {
-                    if (ahora == null) {
-                        return true;
-                    }
-                    return LocalTime.parse(h).isAfter(ahora);
-                })
-                .collect(Collectors.toList());
+        return horariosGenerados.stream()
+                .filter(h -> !horariosOcupados.contains(h.toString()))
+                .filter(h -> ahora == null || h.isAfter(ahora))
+                .map(LocalTime::toString)
+                .toList();
     }
 
     private void validarEntrada(Integer servicioId, LocalDate fecha) {
@@ -167,10 +169,10 @@ public class TurnoServiceImpl implements ITurnoService {
         }
     }
 
-    private List<String> generarHorarios(LocalTime inicio, LocalTime fin) {
-        List<String> horarios = new ArrayList<>();
-        while (!inicio.isAfter(fin.minusMinutes(1))) {
-            horarios.add(inicio.toString());
+    private List<LocalTime> generarHorarios(LocalTime inicio, LocalTime fin) {
+        List<LocalTime> horarios = new ArrayList<>();
+        while (!inicio.plusMinutes(30).isAfter(fin)) {
+            horarios.add(inicio);
             inicio = inicio.plusMinutes(30);
         }
         return horarios;
@@ -253,7 +255,7 @@ public class TurnoServiceImpl implements ITurnoService {
         }
 
         turno.setEmpleado(null);
-        turno.setDisponible(true); 
+        turno.setDisponible(true);
         turno.setCliente(null);
         turno.setCodigoAnulacion(null);
 
