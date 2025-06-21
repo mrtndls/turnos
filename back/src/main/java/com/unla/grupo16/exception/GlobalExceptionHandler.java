@@ -13,43 +13,43 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Manejador para AutenticacionException
+    // AutenticacionException
     @ExceptionHandler(AutenticacionException.class)
     public ResponseEntity<Map<String, Object>> manejarAutenticacionException(AutenticacionException ex) {
         return construirResponse(HttpStatus.UNAUTHORIZED, ex.getMessage());
     }
 
-    // Manejador para UsuarioDeshabilitadoException
+    // UsuarioDeshabilitadoException
     @ExceptionHandler(UsuarioDeshabilitadoException.class)
     public ResponseEntity<Map<String, Object>> manejarUsuarioDeshabilitadoException(UsuarioDeshabilitadoException ex) {
         return construirResponse(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
-    // Manejador para NegocioException (checked exception)
+    // NegocioException 
     @ExceptionHandler(NegocioException.class)
     public ResponseEntity<Map<String, Object>> manejarNegocioException(NegocioException ex) {
         return construirResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
-    // Manejador para RecursoNoEncontradoException
+    // RecursoNoEncontradoException
     @ExceptionHandler(RecursoNoEncontradoException.class)
     public ResponseEntity<Map<String, Object>> manejarRecursoNoEncontrado(RecursoNoEncontradoException ex) {
         return construirResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    // Manejador para DisponibilidadNoEncontradaException
+    // DisponibilidadNoEncontradaException
     @ExceptionHandler(DisponibilidadNoEncontradaException.class)
     public ResponseEntity<Map<String, Object>> manejarDisponibilidadNoEncontrada(DisponibilidadNoEncontradaException ex) {
         return construirResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    // Handler para IllegalArgumentException (por ejemplo en validaciones)
+    // IllegalArgumentException 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> manejarIllegalArgument(IllegalArgumentException ex) {
         return construirResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
-    // Manejador genérico para cualquier otra excepción no capturada
+    // para cialquier excep no controlada
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> manejarExcepcionGenerica(Exception ex) {
         return construirResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Ocurrió un error inesperado.");
@@ -65,7 +65,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, status);
     }
 
-    // Manejador para errores de validación de DTOs (@Valid)
+    // errores de validacion de DTOs (@Valid)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> manejarErroresDeValidacion(MethodArgumentNotValidException ex) {
         Map<String, Object> errores = new HashMap<>();

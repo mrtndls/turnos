@@ -1,11 +1,11 @@
 package com.unla.grupo16.controllers;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -34,6 +34,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('ADMIN')")
+@Validated // para editar mail
 public class AdminController {
 
     private final IClienteService clienteService;
@@ -49,18 +50,17 @@ public class AdminController {
     @Operation(summary = "Listar turnos no disponibles (reservados)")
     @GetMapping("/turnos")
     public ResponseEntity<List<TurnoResponseDTO>> traerTurnosNoDisponibles() {
-        List<Turno> turnos = turnoService.obtenerTurnosNoDisponibles();
+        List<Turno> turnos = turnoService.traerTurnosNoDisponibles();
         List<TurnoResponseDTO> dtos = turnos.stream()
                 .map(turnoMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(dtos);
     }
 
     @Operation(summary = "Listar todos los clientes (activos y dados de baja)")
     @GetMapping("/clientes")
     public ResponseEntity<ClientesAdminResponseDTO> traerClientes() {
-        ClientesAdminResponseDTO response = clienteService.traerClientesActivosYBajaLogica();
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(clienteService.traerClientesActivosYBajaLogica());
     }
 
     @Operation(summary = "Dar de baja (soft delete) a un cliente")
@@ -80,7 +80,8 @@ public class AdminController {
         } catch (RecursoNoEncontradoException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error inesperado.");
+            return ResponseEntity.internalServerError().body("Error inesperado.");
+
         }
     }
 
@@ -94,7 +95,7 @@ public class AdminController {
         } catch (RecursoNoEncontradoException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error inesperado.");
+            return ResponseEntity.internalServerError().body("Error inesperado.");
         }
     }
 
@@ -104,12 +105,13 @@ public class AdminController {
             @Parameter(description = "ID del cliente") @PathVariable Integer clienteId,
             @Valid @RequestBody ClienteAdminDTO clienteDto) {
         try {
-            ClienteAdminDTO clienteActualizado = clienteService.editarCliente(clienteId, clienteDto);
-            return ResponseEntity.ok(clienteActualizado);
+            ClienteAdminDTO actualizado = clienteService.editarCliente(clienteId, clienteDto);
+            return ResponseEntity.ok(actualizado);
         } catch (RecursoNoEncontradoException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.internalServerError().build();
         }
     }
+
 }

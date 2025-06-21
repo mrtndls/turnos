@@ -1,6 +1,6 @@
 import { useState, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { loginUsuario } from "../api/AuthService";
+import { loginUsuario } from "../api/authService";
 import { useAuthContext } from "../context/AuthContext";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 

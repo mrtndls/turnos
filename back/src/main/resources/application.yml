@@ -17,5 +17,5 @@ jwt:
   claveSecreta: hg76Kjsh983hfd!GJgPskdfnQW3498hgf4JHGFh9asdFNLkHWe98hWEkjsdfhJGH8
   tiempoExpiracion: 86400000 # 24 horas en milisegundos
 
-MAIL_USERNAME: email@gmail.com
-MAIL_PASSWORD: codigo
+MAIL_USERNAME: INGRESAR_MAIL
+MAIL_PASSWORD: INGRESAR_CODIGO

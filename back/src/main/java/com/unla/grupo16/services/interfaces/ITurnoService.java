@@ -30,7 +30,7 @@ public interface ITurnoService {
 
     List<String> traerFechasHabilitadasPorMes(Servicio servicio, int year, int month);
 
-    List<Turno> obtenerTurnosNoDisponibles();
+    List<Turno> traerTurnosNoDisponibles();
 
     List<TurnoResponseDTO> obtenerTurnosPorCliente(Integer clienteId);
 

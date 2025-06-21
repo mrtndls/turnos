@@ -290,43 +290,43 @@ public class TurnoServiceImpl implements ITurnoService {
                         inicio = ahora;
                     }
 
-                    // Validar que el rango sea correcto
+                    // valida ranfo correctos
                     return inicio.isBefore(fin) || inicio.equals(fin)
                             ? new DisponibilidadResponseDTO.HorarioDTO(inicio, fin)
                             : null;
                 })
                 .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+                .toList();
 
-        // 5. Armar respuesta
         return new DisponibilidadResponseDTO(fecha, activo, horarios);
 
     }
 
     @Override
     public List<String> traerFechasHabilitadasPorMes(Servicio servicio, int year, int month) {
-        // Fecha de inicio: primer día del mes y año dados
+        // fecha inicio: primer dia del mes y año dados
         LocalDate inicio = LocalDate.of(year, month, 1);
 
-        // Fecha fin: último día del mes correspondiente
+        // fecha cha fin: ultimo dia del mes 
         LocalDate fin = inicio.withDayOfMonth(inicio.lengthOfMonth());
 
-        // Obtener todas las fechas disponibles para ese servicio (ejemplo: método existente que devuelve List<LocalDate>)
+        // tra todas las fechas disp para el serv
         List<LocalDate> fechasDisponibles = traerDiasDisponiblesParaServicio(servicio).stream()
-                // Filtrar fechas dentro del rango del mes consultado
+                // filtra fecha para el mes seleccionado
                 .filter(dia -> !dia.isBefore(inicio) && !dia.isAfter(fin))
-                .collect(Collectors.toList());
+                .toList();
 
-        // Convertir las fechas filtradas a String en formato ISO (yyyy-MM-dd)
+        //convierte a yyy-mm-dd
         return fechasDisponibles.stream()
                 .map(LocalDate::toString)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // --------------------------------------------------------------------------------
     // ADMIN
     @Override
-    public List<Turno> obtenerTurnosNoDisponibles() {
+    public List<Turno> traerTurnosNoDisponibles() {
         return turnoRepository.findByDisponibleFalseOrderByFechaHoraAsc();
     }
+
 }

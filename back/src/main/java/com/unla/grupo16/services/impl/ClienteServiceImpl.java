@@ -1,6 +1,7 @@
 package com.unla.grupo16.services.impl;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -35,19 +36,13 @@ public class ClienteServiceImpl implements IClienteService {
     public ClientesAdminResponseDTO traerClientesActivosYBajaLogica() {
         List<UserEntity> usuarios = userRepository.findAllClientesConUsuarioIncluyendoBaja();
 
-        List<ClienteAdminDTO> activos = usuarios.stream()
-                .filter(UserEntity::isActivo)
+        Map<Boolean, List<ClienteAdminDTO>> particionados = usuarios.stream()
                 .map(clienteMapper::toDTO)
-                .collect(Collectors.toList());
-
-        List<ClienteAdminDTO> bajaLogica = usuarios.stream()
-                .filter(user -> !user.isActivo())
-                .map(clienteMapper::toDTO)
-                .collect(Collectors.toList());
+                .collect(Collectors.partitioningBy(ClienteAdminDTO::clienteActivo)); // partition divide en dos listas
 
         return new ClientesAdminResponseDTO(
-                activos,
-                bajaLogica
+                particionados.get(true), // clientes activos
+                particionados.get(false) // baja lógica
         );
     }
 
@@ -83,22 +78,22 @@ public class ClienteServiceImpl implements IClienteService {
     }
 
     @Override
-    public ClienteAdminDTO editarCliente(Integer clienteId, ClienteAdminDTO clienteDto) throws RecursoNoEncontradoException {
+    public ClienteAdminDTO editarCliente(Integer clienteId, ClienteAdminDTO dto) {
         Cliente cliente = clienteRepository.findById(clienteId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Cliente no encontrado"));
-
-        cliente.setNombre(clienteDto.nombre());
-        cliente.setApellido(clienteDto.apellido());
-        cliente.setDni(clienteDto.dni());
 
         UserEntity user = userRepository.findByPersona(cliente)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario asociado al cliente no encontrado"));
 
-        user.setEmail(clienteDto.email());
+        cliente.setNombre(dto.nombre());
+        cliente.setApellido(dto.apellido());
+        cliente.setDni(dto.dni());
+        user.setEmail(dto.email());
 
         clienteRepository.save(cliente);
         userRepository.save(user);
 
         return clienteMapper.toDTO(user);
     }
+
 }

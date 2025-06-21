@@ -15,7 +15,7 @@ import {
   useState,
 } from "react";
 import { Usuario } from "../types/Usuario"; //dto
-import { logoutUsuario } from "../api/AuthService"; //limpia localStorage al cerrar sesion
+import { logoutUsuario } from "../api/authService"; //limpia localStorage al cerrar sesion
 
 // tipado de contexto: define q datos y func estaran disponibles globalmente
 type AuthContextType = {
