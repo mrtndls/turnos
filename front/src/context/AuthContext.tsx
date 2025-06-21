@@ -1,6 +1,5 @@
-// src/context/AuthContext.tsx
 
-// Este archivo define un "contexto global" de autenticación.
+// define un "contexto global" de autenticacion.
 // Sirve para que cualquier componente pueda acceder al usuario logueado, su token y rol.
 
 // createContext: crear un contexto de React

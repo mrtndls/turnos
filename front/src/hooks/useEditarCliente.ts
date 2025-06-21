@@ -1,6 +1,6 @@
-// hooks/useEditarCliente.ts
+
 import { useState } from "react";
-import { editarCliente } from "../api/adminApi"; // tu función API
+import { editarCliente } from "../api/adminApi"; 
 
 export default function useEditarCliente() {
   const [cargando, setCargando] = useState(false);
